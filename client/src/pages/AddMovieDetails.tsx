@@ -47,11 +47,21 @@ export default function AddMovieDetails() {
   const [inTheater, setInTheater] = useState(true);
   
   // Extract the movie ID from URL
-  const movieId = parseInt(window.location.pathname.split('/').pop() || "0");
+  const params = window.location.pathname;
+  const urlParts = params.split('/');
+  const movieId = parseInt(urlParts[urlParts.length - 1]);
+  console.log("Movie ID from URL:", movieId);
   
   // Fetch movie details
   const { data, isLoading, error } = useQuery<MovieResponse>({
     queryKey: ['/api/tmdb/movie', movieId],
+    queryFn: async () => {
+      const res = await fetch(`/api/tmdb/movie/${movieId}`);
+      if (!res.ok) {
+        throw new Error('Failed to fetch movie details');
+      }
+      return res.json();
+    },
     enabled: !isNaN(movieId) && movieId > 0,
   });
   
