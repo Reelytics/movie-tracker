@@ -94,6 +94,16 @@ export class MemStorage implements IStorage {
   }
   
   private initializeData() {
+    // Add default user
+    this.createUser({
+      username: "user",
+      password: "password", // In a real app, this would be hashed
+      displayName: "Movie Lover",
+      bio: "I love watching movies!",
+      location: "New York, NY",
+      avatarUrl: "https://api.dicebear.com/6.x/avataaars/svg?seed=movie"
+    });
+    
     // Add some genres
     const genreNames = ["Action", "Adventure", "Comedy", "Drama", "Horror", "Sci-Fi", "Thriller", "Biography", "History", "Western"];
     genreNames.forEach(name => this.createGenre({ name }));
@@ -234,7 +244,13 @@ export class MemStorage implements IStorage {
     const watched: Watched = { 
       ...insertWatched, 
       id, 
-      watchedAt: insertWatched.watchedAt || now 
+      watchedAt: now,
+      // Set default values for nullable fields if they aren't provided
+      theaterAuditorium: insertWatched.theaterAuditorium || null,
+      ticketCount: insertWatched.ticketCount || null,
+      seats: insertWatched.seats || null,
+      showtime: insertWatched.showtime || null,
+      timezone: insertWatched.timezone || null
     };
     this.watchedMovies.set(id, watched);
     return watched;

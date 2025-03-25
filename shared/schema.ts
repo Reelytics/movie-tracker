@@ -42,7 +42,13 @@ export const watched = pgTable("watched", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   movieId: integer("movie_id").notNull(),
+  watchedDate: text("watched_date").notNull(),
   theater: text("theater"),
+  theaterAuditorium: text("theater_auditorium"),
+  ticketCount: integer("ticket_count"),
+  seats: text("seats"),
+  showtime: text("showtime"),
+  timezone: text("timezone"),
   watchedAt: timestamp("watched_at").defaultNow(),
   userRating: integer("user_rating"),
   review: text("review")
@@ -87,7 +93,13 @@ export const insertMovieGenreSchema = createInsertSchema(movieGenres).pick({
 export const insertWatchedSchema = createInsertSchema(watched).pick({
   userId: true,
   movieId: true,
+  watchedDate: true,
   theater: true,
+  theaterAuditorium: true,
+  ticketCount: true,
+  seats: true,
+  showtime: true,
+  timezone: true,
   userRating: true,
   review: true
 });
