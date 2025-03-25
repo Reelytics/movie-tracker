@@ -1,0 +1,260 @@
+import type { Express, Request, Response } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { 
+  insertUserSchema, 
+  insertMovieSchema, 
+  insertGenreSchema,
+  insertMovieGenreSchema,
+  insertWatchedSchema,
+  insertTheaterSchema
+} from "@shared/schema";
+import { ZodError } from "zod";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Error handler for Zod validation
+  const validateRequest = (schema: any) => {
+    return (req: Request, res: Response, next: Function) => {
+      try {
+        req.body = schema.parse(req.body);
+        next();
+      } catch (error) {
+        if (error instanceof ZodError) {
+          return res.status(400).json({ 
+            message: "Validation error", 
+            errors: error.errors 
+          });
+        }
+        next(error);
+      }
+    };
+  };
+
+  // User routes
+  app.get("/api/users/:id", async (req, res) => {
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+    
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Remove password from response
+    const { password, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+  });
+  
+  app.post("/api/users", validateRequest(insertUserSchema), async (req, res) => {
+    const existingUser = await storage.getUserByUsername(req.body.username);
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+    
+    const user = await storage.createUser(req.body);
+    const { password, ...userWithoutPassword } = user;
+    res.status(201).json(userWithoutPassword);
+  });
+  
+  app.patch("/api/users/:id", async (req, res) => {
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+    
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Validate only the fields that are being updated
+    const updateData: Record<string, any> = {};
+    const allowedFields = ["displayName", "bio", "location", "avatarUrl"];
+    
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+    
+    const updatedUser = await storage.updateUser(userId, updateData);
+    if (!updatedUser) {
+      return res.status(500).json({ message: "Failed to update user" });
+    }
+    
+    const { password, ...userWithoutPassword } = updatedUser;
+    res.json(userWithoutPassword);
+  });
+  
+  // Movie routes
+  app.get("/api/movies", async (req, res) => {
+    const { search, limit } = req.query;
+    
+    let movies;
+    if (search && typeof search === 'string') {
+      movies = await storage.searchMovies(search);
+    } else {
+      movies = await storage.getPopularMovies(limit ? parseInt(limit as string) : undefined);
+    }
+    
+    res.json(movies);
+  });
+  
+  app.get("/api/movies/recent", async (req, res) => {
+    const { limit } = req.query;
+    const movies = await storage.getRecentMovies(
+      limit ? parseInt(limit as string) : undefined
+    );
+    res.json(movies);
+  });
+  
+  app.get("/api/movies/:id", async (req, res) => {
+    const movieId = parseInt(req.params.id);
+    if (isNaN(movieId)) {
+      return res.status(400).json({ message: "Invalid movie ID" });
+    }
+    
+    const movie = await storage.getMovie(movieId);
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+    
+    res.json(movie);
+  });
+  
+  app.post("/api/movies", validateRequest(insertMovieSchema), async (req, res) => {
+    const movie = await storage.createMovie(req.body);
+    res.status(201).json(movie);
+  });
+  
+  // Genre routes
+  app.get("/api/genres", async (req, res) => {
+    const genres = Array.from(await storage.getGenre(1) || {}).map(genre => genre);
+    res.json(genres);
+  });
+  
+  app.get("/api/movies/:id/genres", async (req, res) => {
+    const movieId = parseInt(req.params.id);
+    if (isNaN(movieId)) {
+      return res.status(400).json({ message: "Invalid movie ID" });
+    }
+    
+    const genres = await storage.getMovieGenres(movieId);
+    res.json(genres);
+  });
+  
+  app.post("/api/genres", validateRequest(insertGenreSchema), async (req, res) => {
+    const existingGenre = await storage.getGenreByName(req.body.name);
+    if (existingGenre) {
+      return res.status(400).json({ message: "Genre already exists" });
+    }
+    
+    const genre = await storage.createGenre(req.body);
+    res.status(201).json(genre);
+  });
+  
+  app.post("/api/movies/:movieId/genres", validateRequest(insertMovieGenreSchema), async (req, res) => {
+    const movieId = parseInt(req.params.movieId);
+    if (isNaN(movieId)) {
+      return res.status(400).json({ message: "Invalid movie ID" });
+    }
+    
+    const movie = await storage.getMovie(movieId);
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+    
+    const { genreId } = req.body;
+    const genre = await storage.getGenre(genreId);
+    if (!genre) {
+      return res.status(404).json({ message: "Genre not found" });
+    }
+    
+    const movieGenre = await storage.addGenreToMovie({ movieId, genreId });
+    res.status(201).json(movieGenre);
+  });
+  
+  // Watched routes
+  app.get("/api/users/:userId/watched", async (req, res) => {
+    const userId = parseInt(req.params.userId);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+    
+    const { limit } = req.query;
+    const watched = await storage.getUserWatched(
+      userId,
+      limit ? parseInt(limit as string) : undefined
+    );
+    
+    // Enrich with movie data
+    const enrichedWatched = await Promise.all(watched.map(async (w) => {
+      const movie = await storage.getMovie(w.movieId);
+      return { ...w, movie };
+    }));
+    
+    res.json(enrichedWatched);
+  });
+  
+  app.post("/api/watched", validateRequest(insertWatchedSchema), async (req, res) => {
+    const { userId, movieId } = req.body;
+    
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    const movie = await storage.getMovie(movieId);
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+    
+    const watched = await storage.createWatched(req.body);
+    
+    // Update user's popcorn count
+    await storage.updatePopcornCount(userId, (user.popcornCount || 0) + 1);
+    
+    res.status(201).json(watched);
+  });
+  
+  // Stats routes
+  app.get("/api/users/:userId/stats", async (req, res) => {
+    const userId = parseInt(req.params.userId);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+    
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    const movieStats = await storage.getUserMovieStats(userId);
+    const genreStats = await storage.getUserGenreStats(userId);
+    const theaterStats = await storage.getUserTheaterVisits(userId);
+    
+    res.json({
+      ...movieStats,
+      genreStats,
+      theaterStats,
+      popcornCount: user.popcornCount || 0
+    });
+  });
+  
+  // Theater routes
+  app.post("/api/theaters", validateRequest(insertTheaterSchema), async (req, res) => {
+    const existingTheater = await storage.getTheaterByName(req.body.name);
+    if (existingTheater) {
+      return res.status(400).json({ message: "Theater already exists" });
+    }
+    
+    const theater = await storage.createTheater(req.body);
+    res.status(201).json(theater);
+  });
+
+  const httpServer = createServer(app);
+
+  return httpServer;
+}
