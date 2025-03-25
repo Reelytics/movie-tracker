@@ -32,6 +32,13 @@ export default function MovieSearchResults({ query, isActive }: MovieSearchResul
   // Only fetch when there's a query and the component is active
   const { data, error, isLoading } = useQuery({
     queryKey: ['/api/tmdb/search', query, page],
+    queryFn: async () => {
+      const res = await fetch(`/api/tmdb/search?query=${encodeURIComponent(query)}&page=${page}`);
+      if (!res.ok) {
+        throw new Error('Failed to search movies');
+      }
+      return res.json();
+    },
     enabled: Boolean(query) && isActive,
   });
 

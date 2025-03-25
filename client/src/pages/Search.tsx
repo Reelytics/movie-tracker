@@ -26,6 +26,9 @@ export default function Search() {
       // Set submitted term and enable search
       setSubmittedTerm(searchTerm.trim());
       setIsSearching(true);
+      
+      // Log for debugging
+      console.log("Search initiated with term:", searchTerm.trim());
     }
   };
 
@@ -37,6 +40,7 @@ export default function Search() {
     setSearchTerm(term);
     setSubmittedTerm(term);
     setIsSearching(true);
+    console.log("Search with term initiated:", term);
   };
 
   return (
