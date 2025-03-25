@@ -10,6 +10,7 @@ import {
   insertTheaterSchema
 } from "@shared/schema";
 import { ZodError } from "zod";
+import * as tmdbService from "./services/tmdb";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Error handler for Zod validation
@@ -131,8 +132,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Genre routes
   app.get("/api/genres", async (req, res) => {
-    const genres = Array.from(await storage.getGenre(1) || {}).map(genre => genre);
-    res.json(genres);
+    // TODO: Implement proper getGenres method in storage
+    // For now, just return an empty array
+    res.json([]);
   });
   
   app.get("/api/movies/:id/genres", async (req, res) => {
@@ -252,6 +254,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const theater = await storage.createTheater(req.body);
     res.status(201).json(theater);
+  });
+  
+  // TMDB API Routes
+  app.get("/api/tmdb/search", async (req, res) => {
+    try {
+      const { query, page } = req.query;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+      
+      const pageNum = page ? parseInt(page as string) : 1;
+      const searchResults = await tmdbService.searchMovies(query, pageNum);
+      
+      // Format the results to match our app's movie format
+      const formattedResults = searchResults.results.map(movie => ({
+        tmdbId: movie.id,
+        title: movie.title,
+        year: tmdbService.extractYearFromDate(movie.release_date),
+        posterUrl: tmdbService.getFullImagePath(movie.poster_path),
+        backdropUrl: tmdbService.getFullImagePath(movie.backdrop_path, 'w1280'),
+        overview: movie.overview
+      }));
+      
+      res.json({
+        results: formattedResults,
+        page: searchResults.page,
+        totalPages: searchResults.total_pages,
+        totalResults: searchResults.total_results
+      });
+    } catch (error) {
+      console.error('TMDB search error:', error);
+      res.status(500).json({ message: 'Failed to search movies', error: (error as Error).message });
+    }
+  });
+  
+  app.get("/api/tmdb/movie/:id", async (req, res) => {
+    try {
+      const movieId = parseInt(req.params.id);
+      if (isNaN(movieId)) {
+        return res.status(400).json({ message: "Invalid movie ID" });
+      }
+      
+      const movieDetails = await tmdbService.getMovieDetails(movieId);
+      const formattedMovie = tmdbService.convertTMDBMovieToInsertMovie(movieDetails);
+      
+      // Also include the original TMDB data for reference
+      res.json({
+        movie: formattedMovie,
+        tmdbData: movieDetails
+      });
+    } catch (error) {
+      console.error('TMDB movie details error:', error);
+      res.status(500).json({ message: 'Failed to get movie details', error: (error as Error).message });
+    }
+  });
+  
+  app.get("/api/tmdb/nowplaying", async (req, res) => {
+    try {
+      const { page } = req.query;
+      const pageNum = page ? parseInt(page as string) : 1;
+      
+      const nowPlaying = await tmdbService.getNowPlayingMovies(pageNum);
+      
+      // Format the results to match our app's movie format
+      const formattedResults = nowPlaying.results.map(movie => ({
+        tmdbId: movie.id,
+        title: movie.title,
+        year: tmdbService.extractYearFromDate(movie.release_date),
+        posterUrl: tmdbService.getFullImagePath(movie.poster_path),
+        backdropUrl: tmdbService.getFullImagePath(movie.backdrop_path, 'w1280'),
+        overview: movie.overview
+      }));
+      
+      res.json({
+        results: formattedResults,
+        page: nowPlaying.page,
+        totalPages: nowPlaying.total_pages,
+        totalResults: nowPlaying.total_results
+      });
+    } catch (error) {
+      console.error('TMDB now playing error:', error);
+      res.status(500).json({ message: 'Failed to get now playing movies', error: (error as Error).message });
+    }
+  });
+  
+  app.post("/api/tmdb/import", async (req, res) => {
+    try {
+      const { tmdbId } = req.body;
+      
+      if (!tmdbId || typeof tmdbId !== 'number') {
+        return res.status(400).json({ message: "TMDB movie ID is required" });
+      }
+      
+      // Get movie details from TMDB
+      const movieDetails = await tmdbService.getMovieDetails(tmdbId);
+      
+      // Convert to our app's movie format
+      const movieToInsert = tmdbService.convertTMDBMovieToInsertMovie(movieDetails);
+      
+      // Check if movie already exists by title
+      let existingMovie = await storage.getMovieByTitle(movieToInsert.title);
+      
+      if (!existingMovie) {
+        // If movie doesn't exist, create it
+        existingMovie = await storage.createMovie(movieToInsert);
+        
+        // Also import the genres if available
+        if (movieDetails.genres && movieDetails.genres.length > 0) {
+          for (const genre of movieDetails.genres) {
+            // Check if genre exists
+            let existingGenre = await storage.getGenreByName(genre.name);
+            
+            if (!existingGenre) {
+              // Create genre if it doesn't exist
+              existingGenre = await storage.createGenre({ name: genre.name });
+            }
+            
+            // Link genre to movie
+            await storage.addGenreToMovie({
+              movieId: existingMovie.id,
+              genreId: existingGenre.id
+            });
+          }
+        }
+      }
+      
+      res.json(existingMovie);
+    } catch (error) {
+      console.error('TMDB import error:', error);
+      res.status(500).json({ message: 'Failed to import movie', error: (error as Error).message });
+    }
   });
 
   const httpServer = createServer(app);
