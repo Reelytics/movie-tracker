@@ -10,6 +10,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import Home from "@/pages/Home";
 import Search from "@/pages/Search";
 import AddMovie from "@/pages/AddMovie";
+import AddMovieDetails from "@/pages/AddMovieDetails";
 import TicketScan from "@/pages/TicketScan";
 import Statistics from "@/pages/Statistics";
 import Profile from "@/pages/Profile";
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/search" component={Search} />
       <Route path="/add" component={AddMovie} />
+      <Route path="/movie/add/:id" component={AddMovieDetails} />
       <Route path="/scan" component={TicketScan} />
       <Route path="/stats" component={Statistics} />
       <Route path="/profile" component={Profile} />

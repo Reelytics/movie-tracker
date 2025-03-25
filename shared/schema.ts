@@ -20,9 +20,10 @@ export const movies = pgTable("movies", {
   year: integer("year").notNull(),
   posterUrl: text("poster_url"),
   backdropUrl: text("backdrop_url"),
-  synopsis: text("synopsis"),
-  runtime: text("runtime"),
+  overview: text("overview"),
+  runtime: integer("runtime"),
   rating: integer("rating"),
+  tmdbId: integer("tmdb_id").unique(),
   createdAt: timestamp("created_at").defaultNow()
 });
 

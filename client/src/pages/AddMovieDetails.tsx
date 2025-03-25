@@ -22,6 +22,20 @@ interface TMDBMovie {
   genres: { id: number; name: string }[];
 }
 
+interface MovieResponse {
+  movie: {
+    id: number;
+    title: string;
+    year: number;
+    posterUrl?: string;
+    backdropUrl?: string;
+    overview?: string;
+    runtime?: number;
+    rating: number;
+  };
+  tmdbData: TMDBMovie;
+}
+
 export default function AddMovieDetails() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -36,18 +50,16 @@ export default function AddMovieDetails() {
   const movieId = parseInt(window.location.pathname.split('/').pop() || "0");
   
   // Fetch movie details
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<MovieResponse>({
     queryKey: ['/api/tmdb/movie', movieId],
     enabled: !isNaN(movieId) && movieId > 0,
   });
   
   // Import movie mutation
   const importMutation = useMutation({
-    mutationFn: (tmdbId: number) => {
-      return apiRequest('/api/tmdb/import', {
-        method: 'POST',
-        body: JSON.stringify({ tmdbId }),
-      });
+    mutationFn: async (tmdbId: number) => {
+      const res = await apiRequest('POST', '/api/tmdb/import', { tmdbId });
+      return res.json();
     },
     onSuccess: (data) => {
       // Add to watched data
@@ -72,11 +84,9 @@ export default function AddMovieDetails() {
   
   // Add to watched mutation
   const watchedMutation = useMutation({
-    mutationFn: (watchedData: any) => {
-      return apiRequest('/api/watched', {
-        method: 'POST',
-        body: JSON.stringify(watchedData),
-      });
+    mutationFn: async (watchedData: any) => {
+      const res = await apiRequest('POST', '/api/watched', watchedData);
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users', 1, 'watched'] });
