@@ -99,7 +99,7 @@ export function convertTMDBMovieToInsertMovie(movie: TMDBMovie): InsertMovie {
     backdropUrl: getFullImagePath(movie.backdrop_path, BACKDROP_SIZE),
     overview: movie.overview || undefined,
     runtime: movie.runtime || undefined,
-    rating: movie.vote_average,
+    rating: Math.round(movie.vote_average),
     tmdbId: movie.id,
   };
 }

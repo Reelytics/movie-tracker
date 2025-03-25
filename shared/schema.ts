@@ -69,9 +69,10 @@ export const insertMovieSchema = createInsertSchema(movies).pick({
   year: true,
   posterUrl: true,
   backdropUrl: true,
-  synopsis: true,
+  overview: true,
   runtime: true,
-  rating: true
+  rating: true,
+  tmdbId: true
 });
 
 export const insertGenreSchema = createInsertSchema(genres).pick({
