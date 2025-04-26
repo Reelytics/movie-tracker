@@ -150,7 +150,7 @@ export default function Home() {
           {/* Sci-Fi Category */}
           <div 
             className="relative h-40 rounded-xl overflow-hidden cursor-pointer shadow-md"
-            onClick={() => navigate(`/genre?id=${GENRES.SCIENCE_FICTION}`)}
+            onClick={() => navigate(`/genre?id=${GENRES.SCIENCE_FICTION.toString()}`)}
           >
             {randomSciFiMovie && randomSciFiMovie.backdrop_path ? (
               <>
@@ -170,7 +170,7 @@ export default function Home() {
           {/* Comedy Category */}
           <div 
             className="relative h-40 rounded-xl overflow-hidden cursor-pointer shadow-md"
-            onClick={() => navigate(`/genre?id=${GENRES.COMEDY}`)}
+            onClick={() => navigate(`/genre?id=${GENRES.COMEDY.toString()}`)}
           >
             {randomComedyMovie && randomComedyMovie.backdrop_path ? (
               <>
@@ -190,7 +190,7 @@ export default function Home() {
           {/* Action Category */}
           <div 
             className="relative h-40 rounded-xl overflow-hidden cursor-pointer shadow-md"
-            onClick={() => navigate(`/genre?id=${GENRES.ACTION}`)}
+            onClick={() => navigate(`/genre?id=${GENRES.ACTION.toString()}`)}
           >
             {randomActionMovie && randomActionMovie.backdrop_path ? (
               <>
@@ -210,7 +210,7 @@ export default function Home() {
           {/* Horror Category */}
           <div 
             className="relative h-40 rounded-xl overflow-hidden cursor-pointer shadow-md"
-            onClick={() => navigate(`/genre?id=${GENRES.HORROR}`)}
+            onClick={() => navigate(`/genre?id=${GENRES.HORROR.toString()}`)}
           >
             {randomHorrorMovie && randomHorrorMovie.backdrop_path ? (
               <>

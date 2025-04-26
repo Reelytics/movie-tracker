@@ -45,7 +45,8 @@ export default function Search() {
     
     if (genreParam) {
       // Redirect to the new genre page
-      navigate(`/genre?id=${genreParam}`);
+      console.log("Redirecting to genre page with ID:", genreParam);
+      navigate(`/genre?id=${genreParam.toString()}`);
     }
   }, [location]);
   
@@ -216,7 +217,7 @@ export default function Search() {
                 {/* Action Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/genre?id=${GENRES.ACTION}`)}
+                  onClick={() => navigate(`/genre?id=${GENRES.ACTION.toString()}`)}
                 >
                   {randomActionMovie && randomActionMovie.backdrop_path ? (
                     <>
@@ -239,7 +240,7 @@ export default function Search() {
                 {/* Comedy Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/genre?id=${GENRES.COMEDY}`)}
+                  onClick={() => navigate(`/genre?id=${GENRES.COMEDY.toString()}`)}
                 >
                   {randomComedyMovie && randomComedyMovie.backdrop_path ? (
                     <>
@@ -262,7 +263,7 @@ export default function Search() {
                 {/* Science Fiction Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/genre?id=${GENRES.SCIENCE_FICTION}`)}
+                  onClick={() => navigate(`/genre?id=${GENRES.SCIENCE_FICTION.toString()}`)}
                 >
                   {randomSciFiMovie && randomSciFiMovie.backdrop_path ? (
                     <>
@@ -285,7 +286,7 @@ export default function Search() {
                 {/* Horror Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/genre?id=${GENRES.HORROR}`)}
+                  onClick={() => navigate(`/genre?id=${GENRES.HORROR.toString()}`)}
                 >
                   {randomHorrorMovie && randomHorrorMovie.backdrop_path ? (
                     <>

@@ -27,73 +27,79 @@ export default function GenrePage() {
     if (genreParam) {
       const id = parseInt(genreParam);
       setGenreId(id);
+      console.log("Genre ID set:", id);
+    } else {
+      console.log("No genre ID found in URL");
     }
-
-    // Extract genre name from ID
+  }, [location]);
+  
+  // Update genre name when genreId changes
+  useEffect(() => {
     if (genreId) {
+      console.log("Setting genre name for ID:", genreId);
+      // Extract genre name from ID
+      let newGenreName = "Movies";
       switch (genreId) {
         case GENRES.ACTION:
-          setGenreName("Action");
+          newGenreName = "Action";
           break;
         case GENRES.ADVENTURE:
-          setGenreName("Adventure");
+          newGenreName = "Adventure";
           break;
         case GENRES.ANIMATION:
-          setGenreName("Animation");
+          newGenreName = "Animation";
           break;
         case GENRES.COMEDY:
-          setGenreName("Comedy");
+          newGenreName = "Comedy";
           break;
         case GENRES.CRIME:
-          setGenreName("Crime");
+          newGenreName = "Crime";
           break;
         case GENRES.DOCUMENTARY:
-          setGenreName("Documentary");
+          newGenreName = "Documentary";
           break;
         case GENRES.DRAMA:
-          setGenreName("Drama");
+          newGenreName = "Drama";
           break;
         case GENRES.FAMILY:
-          setGenreName("Family");
+          newGenreName = "Family";
           break;
         case GENRES.FANTASY:
-          setGenreName("Fantasy");
+          newGenreName = "Fantasy";
           break;
         case GENRES.HISTORY:
-          setGenreName("History");
+          newGenreName = "History";
           break;
         case GENRES.HORROR:
-          setGenreName("Horror");
+          newGenreName = "Horror";
           break;
         case GENRES.MUSIC:
-          setGenreName("Music");
+          newGenreName = "Music";
           break;
         case GENRES.MYSTERY:
-          setGenreName("Mystery");
+          newGenreName = "Mystery";
           break;
         case GENRES.ROMANCE:
-          setGenreName("Romance");
+          newGenreName = "Romance";
           break;
         case GENRES.SCIENCE_FICTION:
-          setGenreName("Science Fiction");
+          newGenreName = "Science Fiction";
           break;
         case GENRES.THRILLER:
-          setGenreName("Thriller");
+          newGenreName = "Thriller";
           break;
         case GENRES.WAR:
-          setGenreName("War");
+          newGenreName = "War";
           break;
         case GENRES.WESTERN:
-          setGenreName("Western");
+          newGenreName = "Western";
           break;
-        default:
-          setGenreName("Movies");
       }
+      
+      setGenreName(newGenreName);
+      document.title = `${newGenreName} Movies | Reelytics`;
     }
-
-    // Set document title
-    document.title = `${genreName} Movies | Reelytics`;
-  }, [location, genreId, genreName]);
+  }, [genreId]);
 
   const { getMoviesByGenre } = useMovieApi();
 
@@ -159,7 +165,7 @@ export default function GenrePage() {
       <div className="flex-1 overflow-y-auto p-4">
         {isLoading ? (
           layout === 'grid' ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-3">
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="rounded overflow-hidden">
                   <Skeleton className="aspect-[2/3] w-full" />
@@ -186,7 +192,7 @@ export default function GenrePage() {
           <>
             {movies && movies.length > 0 ? (
               layout === 'grid' ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-3">
                   {movies.map((movie) => (
                     <div 
                       key={movie.id}
