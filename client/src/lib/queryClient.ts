@@ -12,11 +12,25 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const headers: HeadersInit = {
+  let headers: HeadersInit = {
     "Content-Type": "application/json",
     // Add a cache-busting header to prevent browsers from caching responses
     "X-Requested-With": "XMLHttpRequest",
   };
+  
+  // Add authentication headers from localStorage if available
+  try {
+    const savedUser = localStorage.getItem('reelytics_user');
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      if (userData && userData.id) {
+        headers["X-User-Id"] = userData.id.toString();
+        headers["X-User-Auth"] = "true";
+      }
+    }
+  } catch (e) {
+    console.error("Error reading from localStorage:", e);
+  }
 
   const res = await fetch(url, {
     method,
@@ -41,12 +55,28 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    let headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    };
+    
+    // Add authentication headers from localStorage if available
+    try {
+      const savedUser = localStorage.getItem('reelytics_user');
+      if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        if (userData && userData.id) {
+          headers["X-User-Id"] = userData.id.toString();
+          headers["X-User-Auth"] = "true";
+        }
+      }
+    } catch (e) {
+      console.error("Error reading from localStorage:", e);
+    }
+    
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      }
+      headers
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
