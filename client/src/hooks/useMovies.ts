@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { TMDBMovie, TMDBMovieDetails } from "@/types";
+import { TMDBMovie, TMDBMovieDetails, TMDBGenre } from "@/types";
 import * as tmdbApi from "@/lib/tmdb";
 
 export function useMovieApi() {
@@ -70,12 +70,46 @@ export function useMovieApi() {
       setIsLoading(false);
     }
   }, []);
+  
+  // Get movies by genre
+  const getMoviesByGenre = useCallback(async (genreId: number): Promise<TMDBMovie[]> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const results = await tmdbApi.getMoviesByGenre(genreId);
+      return results;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+  
+  // Get all genres
+  const getGenres = useCallback(async (): Promise<TMDBGenre[]> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const results = await tmdbApi.getGenres();
+      return results;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   return {
     searchMovies,
     getTrendingMovies,
     getMovieDetails,
     getSimilarMovies,
+    getMoviesByGenre,
+    getGenres,
     isLoading,
     error
   };

@@ -1,10 +1,32 @@
-import { TMDBMovie, TMDBMovieDetails } from "@/types";
+import { TMDBMovie, TMDBMovieDetails, TMDBGenre } from "@/types";
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 if (!API_KEY) {
   console.error("Warning: TMDB API key is not set");
 }
 const BASE_URL = "https://api.themoviedb.org/3";
+
+// Genre ID mapping
+export const GENRES = {
+  ACTION: 28,
+  ADVENTURE: 12,
+  ANIMATION: 16,
+  COMEDY: 35,
+  CRIME: 80,
+  DOCUMENTARY: 99,
+  DRAMA: 18,
+  FAMILY: 10751,
+  FANTASY: 14,
+  HISTORY: 36,
+  HORROR: 27,
+  MUSIC: 10402,
+  MYSTERY: 9648,
+  ROMANCE: 10749,
+  SCIENCE_FICTION: 878,
+  THRILLER: 53,
+  WAR: 10752,
+  WESTERN: 37
+};
 
 // Search movies
 export async function searchMovies(query: string): Promise<TMDBMovie[]> {
@@ -90,6 +112,44 @@ export async function getSimilarMovies(movieId: number): Promise<TMDBMovie[]> {
     return data.results;
   } catch (error) {
     console.error("Error fetching similar movies:", error);
+    return [];
+  }
+}
+
+// Get movies by genre
+export async function getMoviesByGenre(genreId: number): Promise<TMDBMovie[]> {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch movies for genre ${genreId}`);
+    }
+
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error(`Error fetching movies for genre ${genreId}:`, error);
+    return [];
+  }
+}
+
+// Get all genres
+export async function getGenres(): Promise<TMDBGenre[]> {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/genre/movie/list?api_key=${API_KEY}`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch genres");
+    }
+
+    const data = await response.json();
+    return data.genres;
+  } catch (error) {
+    console.error("Error fetching genres:", error);
     return [];
   }
 }
