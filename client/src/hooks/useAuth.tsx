@@ -39,37 +39,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Get current user
-  const { data: user, error, isLoading, refetch } = useQuery<User | null>({
+  // Get current user from localStorage first, then try API if needed
+  const [localUser, setLocalUser] = useState<User | null>(() => {
+    try {
+      const savedUser = localStorage.getItem('reelytics_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      console.error('Error reading user from localStorage', e);
+      return null;
+    }
+  });
+  
+  // Get current user from API as backup
+  const { data: apiUser, error, isLoading, refetch } = useQuery<User | null>({
     queryKey: ['/api/user'],
     retry: false,
     // If 401, don't throw error, just return null
     staleTime: 1000 * 60, // 1 minute (shorter to ensure we detect session changes)
     gcTime: 1000 * 60 * 10, // 10 minutes
     initialData: null, // Initialize with null to avoid undefined
+    enabled: !localUser, // Only run if no local user
     queryFn: async () => {
       try {
-        console.log("Fetching current user data...");
+        console.log("Fetching current user data from API...");
         const response = await fetch('/api/user', { 
           credentials: 'include', // Important: This ensures cookies are sent
           headers: { 
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache, no-store',
             'Pragma': 'no-cache'
-          },
-          mode: 'cors' // Explicitly set CORS mode
+          }
         });
-        
-        console.log("User API response status:", response.status);
-        // Convert headers to object to avoid TypeScript iterator issues
-        const headers: Record<string, string> = {};
-        response.headers.forEach((value, key) => {
-          headers[key] = value;
-        });
-        console.log("User API response headers:", headers);
         
         if (response.status === 401) {
-          console.log("User not authenticated");
+          console.log("User not authenticated via API");
           return null;
         }
         
@@ -79,14 +82,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         const userData = await response.json();
-        console.log("User data retrieved:", userData);
+        console.log("User data retrieved from API:", userData);
+        
+        // Save to localStorage
+        localStorage.setItem('reelytics_user', JSON.stringify(userData));
+        
         return userData;
       } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error fetching user from API:', error);
         return null;
       }
     }
   });
+  
+  // Use local user if available, otherwise use API user
+  const user = localUser || apiUser;
 
   // Login mutation
   const loginMutation = useMutation({
@@ -114,19 +124,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (data) => {
       console.log("Login successful, user data:", data);
       
+      // Save to localStorage
+      localStorage.setItem('reelytics_user', JSON.stringify(data));
+      setLocalUser(data);
+      
       // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
       
-      // Add a small delay to ensure state updates before redirection
-      setTimeout(() => {
-        // Force refetch all queries to ensure data is fresh
-        queryClient.invalidateQueries();
-        
-        toast({
-          title: "Logged in",
-          description: `Welcome back, ${data.username}!`,
-        });
-      }, 100);
+      toast({
+        title: "Logged in",
+        description: `Welcome back, ${data.username}!`,
+      });
     },
     onError: (error) => {
       console.error("Login error:", error);
@@ -145,9 +153,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await apiRequest("POST", "/api/logout");
     },
     onSuccess: () => {
+      // Clear localStorage
+      localStorage.removeItem('reelytics_user');
+      setLocalUser(null);
+      
+      // Update query cache
       queryClient.setQueryData(['/api/user'], null);
-      // Invalidate all queries to refresh data
-      queryClient.invalidateQueries();
+      
       toast({
         title: "Logged out",
         description: "You have been logged out",
@@ -188,19 +200,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (data) => {
       console.log("Registration successful, user data:", data);
       
+      // Save to localStorage
+      localStorage.setItem('reelytics_user', JSON.stringify(data));
+      setLocalUser(data);
+      
       // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
       
-      // Add a small delay to ensure state updates before redirection
-      setTimeout(() => {
-        // Force refetch all queries to ensure data is fresh
-        queryClient.invalidateQueries();
-        
-        toast({
-          title: "Account created",
-          description: `Welcome to Reelytics, ${data.username}!`,
-        });
-      }, 100);
+      toast({
+        title: "Account created",
+        description: `Welcome to Reelytics, ${data.username}!`,
+      });
     },
     onError: (error) => {
       console.error("Registration error:", error);
