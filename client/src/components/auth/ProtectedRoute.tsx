@@ -9,11 +9,21 @@ type ProtectedRouteProps = {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
-  // Use useEffect to handle navigation after render
+  // Log authentication state for debugging
+  useEffect(() => {
+    console.log("ProtectedRoute: Authentication state", { 
+      isLoading, 
+      isAuthenticated: !!user,
+      currentLocation: location 
+    });
+  }, [user, isLoading, location]);
+
+  // Handle navigation after render
   useEffect(() => {
     if (!isLoading && !user) {
+      console.log("Not authenticated, redirecting to /auth");
       setLocation("/auth");
     }
   }, [user, isLoading, setLocation]);
@@ -23,6 +33,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-primary">Loading your profile...</span>
       </div>
     );
   }
@@ -32,6 +43,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-primary">Redirecting to login...</span>
       </div>
     );
   }

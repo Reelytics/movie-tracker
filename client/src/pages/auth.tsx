@@ -33,10 +33,19 @@ export default function AuthPage() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<string>("login");
 
+  // Log authentication state
+  useEffect(() => {
+    console.log("AuthPage: Authentication state", { 
+      isAuthenticated: !!user, 
+      user: user ? { id: user.id, username: user.username } : null 
+    });
+  }, [user]);
+  
   // Use useEffect for redirection instead of conditional rendering
   // This avoids the React hooks error
   useEffect(() => {
     if (user) {
+      console.log("User authenticated, redirecting to home page");
       setLocation("/");
     }
   }, [user, setLocation]);
@@ -51,9 +60,13 @@ export default function AuthPage() {
   });
 
   const handleLoginSubmit = async (values: LoginFormValues) => {
+    console.log("Submitting login form with:", { username: values.username });
     try {
       await login(values);
+      console.log("Login function completed successfully");
     } catch (error: any) {
+      console.error("Login error in form handler:", error);
+      
       // Handle invalid credentials
       loginForm.setError("password", {
         type: "manual",
@@ -63,6 +76,13 @@ export default function AuthPage() {
       loginForm.setError("username", {
         type: "manual",
         message: " " // Just add a space to trigger the error state without text
+      });
+      
+      // Show a toast with the error
+      toast({
+        title: "Login failed",
+        description: error.message || "Could not log in with those credentials",
+        variant: "destructive"
       });
     }
   };

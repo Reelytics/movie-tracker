@@ -40,29 +40,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   
   // Get current user
-  const { data: user, error, isLoading } = useQuery<User | null>({
+  const { data: user, error, isLoading, refetch } = useQuery<User | null>({
     queryKey: ['/api/user'],
     retry: false,
     // If 401, don't throw error, just return null
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60, // 1 minute (shorter to ensure we detect session changes)
     gcTime: 1000 * 60 * 10, // 10 minutes
     initialData: null, // Initialize with null to avoid undefined
     queryFn: async () => {
       try {
+        console.log("Fetching current user data...");
         const response = await fetch('/api/user', { 
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store',
+            'Pragma': 'no-cache'
+          }
         });
         
+        console.log("User API response status:", response.status);
+        
         if (response.status === 401) {
+          console.log("User not authenticated");
           return null;
         }
         
         if (!response.ok) {
+          console.error("Error response from API:", response.status);
           throw new Error('Failed to fetch user data');
         }
         
-        return await response.json();
+        const userData = await response.json();
+        console.log("User data retrieved:", userData ? "User authenticated" : "No user data");
+        return userData;
       } catch (error) {
         console.error('Error fetching user:', error);
         return null;
@@ -78,7 +89,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest" // Prevent caching
+          "X-Requested-With": "XMLHttpRequest", // Prevent caching
+          "Cache-Control": "no-cache, no-store",
+          "Pragma": "no-cache"
         },
         body: JSON.stringify(credentials),
         credentials: "include" // Important for cookies
@@ -86,17 +99,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Invalid username or password");
+        throw new Error(errorData.error || "Invalid username or password");
       }
       
       return await response.json();
     },
     onSuccess: (data) => {
+      console.log("Login successful, user data:", data);
+      
       // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
       
-      // Refetch user data to ensure we have the latest
-      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      // Immediately refetch user data to ensure we have the latest
+      refetch();
       
       toast({
         title: "Logged in",
@@ -105,7 +120,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onError: (error) => {
       console.error("Login error:", error);
-      // Error handling will be done at the form level
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      // Additional error handling will be done at the form level
     },
   });
 
@@ -136,23 +156,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterCredentials) => {
       console.log("Registering user:", credentials.username);
-      const response = await apiRequest("POST", "/api/register", credentials);
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest", // Prevent caching
+          "Cache-Control": "no-cache, no-store",
+          "Pragma": "no-cache"
+        },
+        body: JSON.stringify(credentials),
+        credentials: "include" // Important for cookies
+      });
+      
       if (!response.ok) {
         const errorData = await response.json();
-        // Get error message and possibly the error type (username_taken, email_taken, etc.)
-        throw new Error(errorData.message || "Registration failed");
+        throw new Error(errorData.error || "Registration failed");
       }
+      
       return await response.json();
     },
     onSuccess: (data) => {
+      console.log("Registration successful, user data:", data);
+      
+      // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
+      
+      // Immediately refetch user data to ensure we have the latest
+      refetch();
+      
       toast({
-        title: "Registered",
-        description: `Welcome, ${data.username}!`,
+        title: "Account created",
+        description: `Welcome to Reelytics, ${data.username}!`,
       });
     },
-    onError: () => {
-      // Error handling will be done at the form level
+    onError: (error) => {
+      console.error("Registration error:", error);
+      toast({
+        title: "Registration failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      // Additional error handling will be done at the form level
     },
   });
 
