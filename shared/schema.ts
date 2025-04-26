@@ -43,6 +43,14 @@ export const favorites = pgTable("favorites", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Followers - users following other users
+export const followers = pgTable("followers", {
+  id: serial("id").primaryKey(),
+  followerId: integer("follower_id").notNull(), // User who is following
+  followedId: integer("followed_id").notNull(), // User being followed
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -76,6 +84,11 @@ export const insertFavoriteSchema = createInsertSchema(favorites).pick({
   movieId: true,
 });
 
+export const insertFollowerSchema = createInsertSchema(followers).pick({
+  followerId: true,
+  followedId: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -88,6 +101,9 @@ export type WatchedMovie = typeof watchedMovies.$inferSelect;
 
 export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 export type Favorite = typeof favorites.$inferSelect;
+
+export type InsertFollower = z.infer<typeof insertFollowerSchema>;
+export type Follower = typeof followers.$inferSelect;
 
 // Extended types for API responses
 export const userStatsSchema = z.object({
