@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
-import { useMovieApi } from "@/hooks/useMovies";
 import { TMDBMovieDetails, TMDBMovie } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -12,6 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import RateMovieModal from "@/components/movies/RateMovieModal";
+import * as tmdbApi from "@/lib/tmdb";
 
 export default function MovieDetails() {
   const params = useParams<{ id: string }>();
