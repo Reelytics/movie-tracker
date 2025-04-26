@@ -8,27 +8,49 @@ import Profile from "@/pages/profile";
 import Home from "@/pages/home";
 import Search from "@/pages/search";
 import Library from "@/pages/library";
+import AuthPage from "@/pages/auth";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
 import { ThemeProvider } from "next-themes";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { useState, useEffect } from "react";
 import { MovieDetailModalProvider } from "@/hooks/useModal";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 function Router() {
   const [location] = useLocation();
-  const showNav = !location.startsWith("/onboarding");
+  const showNav = !location.startsWith("/onboarding") && !location.startsWith("/auth");
 
   return (
     <div className="min-h-screen flex flex-col">
       {showNav && <Header />}
       <main className="flex-1 pb-16">
         <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/profile" component={Profile} />
-          <Route path="/search" component={Search} />
-          <Route path="/library" component={Library} />
-          <Route component={NotFound} />
+          <Route path="/auth" component={AuthPage} />
+          <Route path="/">
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/profile">
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/search">
+            <ProtectedRoute>
+              <Search />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/library">
+            <ProtectedRoute>
+              <Library />
+            </ProtectedRoute>
+          </Route>
+          <Route>
+            <NotFound />
+          </Route>
         </Switch>
       </main>
       {showNav && <BottomNavigation />}
@@ -56,17 +78,19 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="light">
         <TooltipProvider>
-          <MovieDetailModalProvider>
-            <Toaster />
-            <Router />
-            {showOnboarding && (
-              <OnboardingModal
-                visible={showOnboarding}
-                onComplete={completeOnboarding}
-                onSkip={completeOnboarding}
-              />
-            )}
-          </MovieDetailModalProvider>
+          <AuthProvider>
+            <MovieDetailModalProvider>
+              <Toaster />
+              <Router />
+              {showOnboarding && (
+                <OnboardingModal
+                  visible={showOnboarding}
+                  onComplete={completeOnboarding}
+                  onSkip={completeOnboarding}
+                />
+              )}
+            </MovieDetailModalProvider>
+          </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
