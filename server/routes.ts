@@ -65,10 +65,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username already exists" });
       }
 
-      // Hash the password
-      const salt = require('crypto').randomBytes(16).toString('hex');
-      const hash = require('crypto').scryptSync(req.body.password, salt, 64).toString('hex');
-      const passwordHash = `${hash}.${salt}`;
+      // Use the hashPassword function from auth.ts
+      // Import the function first
+      const { hashPassword } = await import('./auth');
+      const passwordHash = await hashPassword(req.body.password);
 
       // Create the user
       const userData = {

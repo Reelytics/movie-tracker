@@ -52,7 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
+      console.log("Logging in user:", credentials.username);
       const response = await apiRequest("POST", "/api/auth/login", credentials);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Invalid username or password");
+      }
       return await response.json();
     },
     onSuccess: (data) => {
@@ -97,7 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterCredentials) => {
+      console.log("Registering user:", credentials.username);
       const response = await apiRequest("POST", "/api/auth/register", credentials);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
+      }
       return await response.json();
     },
     onSuccess: (data) => {

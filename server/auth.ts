@@ -15,13 +15,13 @@ declare global {
 
 const scryptAsync = promisify(scrypt);
 
-async function hashPassword(password: string) {
+export async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
   return `${buf.toString("hex")}.${salt}`;
 }
 
-async function comparePasswords(supplied: string, stored: string) {
+export async function comparePasswords(supplied: string, stored: string) {
   const [hashed, salt] = stored.split(".");
   const hashedBuf = Buffer.from(hashed, "hex");
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
@@ -67,13 +67,26 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log(`Attempting login for user: ${username}`);
         const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.passwordHash))) {
+        
+        if (!user) {
+          console.log(`User not found: ${username}`);
+          return done(null, false);
+        }
+        
+        console.log(`User found, comparing passwords`);
+        const passwordsMatch = await comparePasswords(password, user.passwordHash);
+        
+        if (!passwordsMatch) {
+          console.log(`Password mismatch for user: ${username}`);
           return done(null, false);
         } else {
+          console.log(`Login successful for user: ${username}`);
           return done(null, user);
         }
       } catch (error) {
+        console.error(`Login error for user ${username}:`, error);
         return done(error);
       }
     }),
