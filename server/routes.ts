@@ -2,7 +2,10 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertUserSchema, insertMovieSchema, insertWatchedMovieSchema, userProfileSchema } from "@shared/schema";
+import { 
+  insertUserSchema, insertMovieSchema, insertWatchedMovieSchema, 
+  userProfileSchema, insertFollowerSchema 
+} from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { setupAuth, createTestUser } from "./auth";
@@ -271,6 +274,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Follower endpoints
+  apiRouter.get("/users/:id/followers", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID format" });
+      }
+      
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const followers = await storage.getFollowers(userId);
+      
+      // Don't return sensitive info like passwords
+      const safeFollowers = followers.map(follower => ({
+        id: follower.id,
+        username: follower.username,
+        fullName: follower.fullName,
+        bio: follower.bio,
+        profilePicture: follower.profilePicture
+      }));
+      
+      return res.json(safeFollowers);
+    } catch (error) {
+      handleError(error as Error, res);
+    }
+  });
+  
+  apiRouter.get("/users/:id/following", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID format" });
+      }
+      
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const following = await storage.getFollowing(userId);
+      
+      // Don't return sensitive info like passwords
+      const safeFollowing = following.map(followedUser => ({
+        id: followedUser.id,
+        username: followedUser.username,
+        fullName: followedUser.fullName,
+        bio: followedUser.bio,
+        profilePicture: followedUser.profilePicture
+      }));
+      
+      return res.json(safeFollowing);
+    } catch (error) {
+      handleError(error as Error, res);
+    }
+  });
+  
+  apiRouter.post("/users/:id/follow", ensureAuthenticated, async (req, res) => {
+    try {
+      const followerId = req.user?.id as number;
+      const followedId = parseInt(req.params.id);
+      
+      if (isNaN(followedId)) {
+        return res.status(400).json({ message: "Invalid user ID format" });
+      }
+      
+      // Can't follow yourself
+      if (followerId === followedId) {
+        return res.status(400).json({ message: "You cannot follow yourself" });
+      }
+      
+      // Check if followed user exists
+      const followedUser = await storage.getUser(followedId);
+      if (!followedUser) {
+        return res.status(404).json({ message: "User to follow not found" });
+      }
+      
+      // Create follow relationship
+      const follower = await storage.followUser({
+        followerId,
+        followedId
+      });
+      
+      return res.status(201).json(follower);
+    } catch (error) {
+      handleError(error as Error, res);
+    }
+  });
+  
+  apiRouter.delete("/users/:id/follow", ensureAuthenticated, async (req, res) => {
+    try {
+      const followerId = req.user?.id as number;
+      const followedId = parseInt(req.params.id);
+      
+      if (isNaN(followedId)) {
+        return res.status(400).json({ message: "Invalid user ID format" });
+      }
+      
+      // Check if followed user exists
+      const followedUser = await storage.getUser(followedId);
+      if (!followedUser) {
+        return res.status(404).json({ message: "User to unfollow not found" });
+      }
+      
+      // Remove follow relationship
+      const unfollowed = await storage.unfollowUser(followerId, followedId);
+      
+      if (!unfollowed) {
+        return res.status(404).json({ message: "You were not following this user" });
+      }
+      
+      return res.status(204).end();
+    } catch (error) {
+      handleError(error as Error, res);
+    }
+  });
+  
+  apiRouter.get("/users/:id/is-following", ensureAuthenticated, async (req, res) => {
+    try {
+      const followerId = req.user?.id as number;
+      const followedId = parseInt(req.params.id);
+      
+      if (isNaN(followedId)) {
+        return res.status(400).json({ message: "Invalid user ID format" });
+      }
+      
+      const isFollowing = await storage.isFollowing(followerId, followedId);
+      
+      return res.json({ isFollowing });
+    } catch (error) {
+      handleError(error as Error, res);
+    }
+  });
+  
   // Register the API router
   app.use("/api", apiRouter);
 

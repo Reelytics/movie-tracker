@@ -3,6 +3,7 @@ import {
   movies, type Movie, type InsertMovie,
   watchedMovies, type WatchedMovie, type InsertWatchedMovie,
   favorites, type Favorite, type InsertFavorite,
+  followers, type Follower, type InsertFollower,
   type UserStats, type WatchedMovieWithDetails
 } from "@shared/schema";
 import session from "express-session";
@@ -32,6 +33,13 @@ export interface IStorage {
   getFavorites(userId: number): Promise<WatchedMovieWithDetails[]>;
   addFavorite(favorite: InsertFavorite): Promise<Favorite>;
   removeFavorite(userId: number, movieId: number): Promise<boolean>;
+  
+  // Follower operations
+  getFollowers(userId: number): Promise<User[]>;
+  getFollowing(userId: number): Promise<User[]>;
+  followUser(follower: InsertFollower): Promise<Follower>;
+  unfollowUser(followerId: number, followedId: number): Promise<boolean>;
+  isFollowing(followerId: number, followedId: number): Promise<boolean>;
   
   // Stats
   getUserStats(userId: number): Promise<UserStats>;
@@ -233,6 +241,105 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
   
+  // Follower operations
+  async getFollowers(userId: number): Promise<User[]> {
+    // Get all users who follow this user
+    const followerRelations = await db
+      .select()
+      .from(followers)
+      .where(eq(followers.followedId, userId));
+    
+    if (followerRelations.length === 0) {
+      return [];
+    }
+    
+    // Get the follower user details
+    const followerIds = followerRelations.map(f => f.followerId);
+    const followerUsers = await db
+      .select()
+      .from(users)
+      .where(inArray(users.id, followerIds));
+    
+    return followerUsers;
+  }
+  
+  async getFollowing(userId: number): Promise<User[]> {
+    // Get all users that this user follows
+    const followingRelations = await db
+      .select()
+      .from(followers)
+      .where(eq(followers.followerId, userId));
+    
+    if (followingRelations.length === 0) {
+      return [];
+    }
+    
+    // Get the followed user details
+    const followedIds = followingRelations.map(f => f.followedId);
+    const followedUsers = await db
+      .select()
+      .from(users)
+      .where(inArray(users.id, followedIds));
+    
+    return followedUsers;
+  }
+  
+  async followUser(followerData: InsertFollower): Promise<Follower> {
+    // Check if already following
+    const [existingFollow] = await db
+      .select()
+      .from(followers)
+      .where(
+        and(
+          eq(followers.followerId, followerData.followerId),
+          eq(followers.followedId, followerData.followedId)
+        )
+      );
+      
+    if (existingFollow) {
+      return existingFollow;
+    }
+    
+    // Insert the new follow relationship
+    const [follower] = await db
+      .insert(followers)
+      .values({
+        ...followerData,
+        createdAt: new Date()
+      })
+      .returning();
+    
+    return follower;
+  }
+  
+  async unfollowUser(followerId: number, followedId: number): Promise<boolean> {
+    const result = await db
+      .delete(followers)
+      .where(
+        and(
+          eq(followers.followerId, followerId),
+          eq(followers.followedId, followedId)
+        )
+      )
+      .returning({ id: followers.id });
+    
+    return result.length > 0;
+  }
+  
+  async isFollowing(followerId: number, followedId: number): Promise<boolean> {
+    const [relation] = await db
+      .select()
+      .from(followers)
+      .where(
+        and(
+          eq(followers.followerId, followerId),
+          eq(followers.followedId, followedId)
+        )
+      );
+    
+    return !!relation;
+  }
+  
   // Stats
   async getUserStats(userId: number): Promise<UserStats> {
     // Count watched movies
@@ -258,11 +365,17 @@ export class DatabaseStorage implements IStorage {
         )
       );
     
+    // Count followers
+    const [followersCount] = await db
+      .select({ count: sql`count(*)` })
+      .from(followers)
+      .where(eq(followers.followedId, userId));
+    
     return {
       watched: Number(watchedCount.count) || 0,
       favorites: Number(favoritesCount.count) || 0,
       reviews: Number(reviewsCount.count) || 0,
-      followers: 283, // Mock value for now
+      followers: Number(followersCount.count) || 0,
     };
   }
 }
