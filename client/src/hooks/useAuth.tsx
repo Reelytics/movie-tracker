@@ -47,27 +47,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
     initialData: null, // Initialize with null to avoid undefined
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/user', { 
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.status === 401) {
+          return null;
+        }
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        return null;
+      }
+    }
   });
 
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
       console.log("Logging in user:", credentials.username);
-      const response = await apiRequest("POST", "/api/login", credentials);
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest" // Prevent caching
+        },
+        body: JSON.stringify(credentials),
+        credentials: "include" // Important for cookies
+      });
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Invalid username or password");
       }
+      
       return await response.json();
     },
     onSuccess: (data) => {
+      // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
+      
+      // Refetch user data to ensure we have the latest
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      
       toast({
         title: "Logged in",
         description: `Welcome back, ${data.username}!`,
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Login error:", error);
       // Error handling will be done at the form level
     },
   });

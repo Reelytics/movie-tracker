@@ -51,6 +51,23 @@ export async function createTestUser() {
 }
 
 export function setupAuth(app: Express) {
+  // Add security headers
+  app.use((req, res, next) => {
+    // Enable CORS for development
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
+    res.header('Access-Control-Allow-Credentials', 'true');
+
+    // Security headers
+    res.header('X-Content-Type-Options', 'nosniff');
+    res.header('X-XSS-Protection', '1; mode=block');
+    res.header('X-Frame-Options', 'DENY');
+    
+    next();
+  });
+
+  // Configure session
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "movie-diary-secret",
     resave: false,
@@ -59,7 +76,8 @@ export function setupAuth(app: Express) {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
+      sameSite: 'lax',
+      path: '/'
     }
   };
 
