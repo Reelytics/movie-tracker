@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { WatchedMovieWithDetails } from "@shared/schema";
 import { X, Bookmark, Heart, Share, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,24 +42,38 @@ export default function MovieDetailModal({ watchedMovie, isOpen, onClose }: Movi
     return `https://image.tmdb.org/t/p/${size}${path}`;
   };
   
+  // State to track local favorite status
+  const [isFavorite, setIsFavorite] = useState(watchedMovie.favorite);
+  
+  // Update local state when props change
+  useEffect(() => {
+    setIsFavorite(watchedMovie.favorite);
+  }, [watchedMovie.favorite]);
+  
   // Toggle favorite status
   const toggleFavoriteMutation = useMutation({
     mutationFn: async () => {
       return apiRequest(
         "PATCH", 
         `/api/movies/watched/${watchedMovie.id}`, 
-        { favorite: !watchedMovie.favorite }
+        { favorite: !isFavorite }
       );
+    },
+    onMutate: async () => {
+      // Optimistically update UI
+      setIsFavorite(!isFavorite);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/movies/watched"] });
       queryClient.invalidateQueries({ queryKey: ["/api/movies/favorites"] });
       toast({
-        title: watchedMovie.favorite ? "Removed from favorites" : "Added to favorites",
+        title: isFavorite ? "Removed from favorites" : "Added to favorites",
         duration: 2000
       });
     },
     onError: (error) => {
+      // Revert optimistic update on error
+      setIsFavorite(!isFavorite);
       toast({
         title: "Error",
         description: error.message,
@@ -143,7 +157,7 @@ export default function MovieDetailModal({ watchedMovie, isOpen, onClose }: Movi
                     disabled={toggleFavoriteMutation.isPending}
                   >
                     <Heart 
-                      className={`h-5 w-5 mb-1 ${watchedMovie.favorite ? "fill-red-500 text-red-500" : ""}`} 
+                      className={`h-5 w-5 mb-1 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} 
                     />
                     <span className="text-xs">Favorite</span>
                   </Button>
