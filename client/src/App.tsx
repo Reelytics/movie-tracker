@@ -21,7 +21,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 function Router() {
   const [location] = useLocation();
-  const showNav = !location.startsWith("/onboarding") && !location.startsWith("/auth");
+  const showNav = !location.startsWith("/onboarding") && !location.startsWith("/auth") && !location.startsWith("/movie/");
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -48,6 +48,9 @@ function Router() {
             <ProtectedRoute>
               <Library />
             </ProtectedRoute>
+          </Route>
+          <Route path="/movie/:id">
+            <MovieDetails />
           </Route>
           <Route>
             <NotFound />

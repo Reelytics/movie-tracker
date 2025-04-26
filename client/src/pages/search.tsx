@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search as SearchIcon, X, Clock } from "lucide-react";
 import AddMovieModal from "@/components/movies/AddMovieModal";
 import { TMDBMovie } from "@/types";
+import { useLocation } from "wouter";
 
 export default function Search() {
   const [query, setQuery] = useState("");

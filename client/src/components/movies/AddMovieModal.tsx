@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMovieApi } from "@/hooks/useMovies";
 import { useQuery } from "@tanstack/react-query";
 import RateMovieModal from "./RateMovieModal";
+import { useLocation } from "wouter";
 
 interface AddMovieModalProps {
   movie?: TMDBMovie;
@@ -27,6 +28,7 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { searchMovies } = useMovieApi();
+  const [, navigate] = useLocation();
   
   // Debounce search query
   useEffect(() => {
@@ -201,7 +203,7 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
                             <div 
                               key={movie.id} 
                               className="flex items-center border border-gray-200 p-2 rounded-lg cursor-pointer hover:bg-gray-50"
-                              onClick={() => handleSelectMovie(movie)}
+                              onClick={() => navigate(`/movie/${movie.id}`)}
                             >
                               <div className="w-16 h-24 rounded overflow-hidden">
                                 <img 

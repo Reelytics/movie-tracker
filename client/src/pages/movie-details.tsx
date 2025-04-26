@@ -99,13 +99,13 @@ export default function MovieDetails() {
   };
   
   const goBack = () => {
-    navigate(-1);
+    navigate("/");
   };
   
   if (isLoading || !movie) {
     return (
       <div className="container max-w-4xl mx-auto px-4 py-8">
-        <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="sm" className="mb-4" onClick={goBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
@@ -153,7 +153,7 @@ export default function MovieDetails() {
           variant="outline" 
           size="sm" 
           className="absolute top-4 left-4 bg-white/80 hover:bg-white"
-          onClick={() => navigate(-1)}
+          onClick={goBack}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
@@ -235,7 +235,7 @@ export default function MovieDetails() {
                 <p className="text-gray-700">{movie.director}</p>
               </div>
               
-              {movie.budget > 0 && (
+              {movie.budget && movie.budget > 0 && (
                 <div>
                   <h3 className="font-semibold mb-1">Budget</h3>
                   <p className="text-gray-700">${(movie.budget / 1000000).toFixed(1)}M</p>
