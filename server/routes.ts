@@ -57,6 +57,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(200).json({ message: "Logged out successfully" });
     });
   });
+  
+  apiRouter.post("/auth/register", async (req, res, next) => {
+    try {
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      // Hash the password
+      const salt = require('crypto').randomBytes(16).toString('hex');
+      const hash = require('crypto').scryptSync(req.body.password, salt, 64).toString('hex');
+      const passwordHash = `${hash}.${salt}`;
+
+      // Create the user
+      const userData = {
+        username: req.body.username,
+        passwordHash,
+        email: req.body.email,
+        fullName: req.body.fullName || null,
+        bio: null,
+        profilePicture: null
+      };
+
+      const user = await storage.createUser(userData);
+
+      req.login(user, (err) => {
+        if (err) return next(err);
+        const userResponse = { ...user };
+        delete userResponse.passwordHash; // Don't send the password hash to the client
+        res.status(201).json(userResponse);
+      });
+    } catch (error) {
+      handleError(error as Error, res);
+    }
+  });
 
   // User routes
   apiRouter.get("/users/current", ensureAuthenticated, async (req, res) => {
@@ -186,8 +221,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  apiRouter.patch("/movies/watched/:id", async (req, res) => {
+  apiRouter.patch("/movies/watched/:id", ensureAuthenticated, async (req, res) => {
     try {
+      const userId = req.user?.id as number;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid ID format" });
@@ -199,11 +235,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Watched movie not found" });
       }
       
-      // For simplicity, we're using the default user
-      const defaultUserId = 1;
-      
       // Check user ownership
-      if (existingWatchedMovie.userId !== defaultUserId) {
+      if (existingWatchedMovie.userId !== userId) {
         return res.status(403).json({ message: "Not authorized to update this record" });
       }
       
@@ -222,11 +255,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (typeof updateData.favorite !== 'undefined') {
         if (updateData.favorite) {
           await storage.addFavorite({
-            userId: defaultUserId,
+            userId,
             movieId: existingWatchedMovie.movieId,
           });
         } else {
-          await storage.removeFavorite(defaultUserId, existingWatchedMovie.movieId);
+          await storage.removeFavorite(userId, existingWatchedMovie.movieId);
         }
       }
       
@@ -236,8 +269,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  apiRouter.delete("/movies/watched/:id", async (req, res) => {
+  apiRouter.delete("/movies/watched/:id", ensureAuthenticated, async (req, res) => {
     try {
+      const userId = req.user?.id as number;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid ID format" });
@@ -249,11 +283,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Watched movie not found" });
       }
       
-      // For simplicity, we're using the default user
-      const defaultUserId = 1;
-      
       // Check user ownership
-      if (existingWatchedMovie.userId !== defaultUserId) {
+      if (existingWatchedMovie.userId !== userId) {
         return res.status(403).json({ message: "Not authorized to delete this record" });
       }
       
@@ -261,7 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const deleted = await storage.deleteWatchedMovie(id);
       
       // Also remove from favorites if present
-      await storage.removeFavorite(defaultUserId, existingWatchedMovie.movieId);
+      await storage.removeFavorite(userId, existingWatchedMovie.movieId);
       
       if (!deleted) {
         return res.status(500).json({ message: "Failed to delete watched movie" });

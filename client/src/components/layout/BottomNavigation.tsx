@@ -1,13 +1,20 @@
 import { useLocation, Link } from "wouter";
-import { Home, Search, Film, User, Plus } from "lucide-react";
+import { Home, Search, Film, User, Plus, LogIn } from "lucide-react";
 import { useState } from "react";
 import AddMovieModal from "@/components/movies/AddMovieModal";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function BottomNavigation() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [showAddModal, setShowAddModal] = useState(false);
+  const { user } = useAuth();
   
   const isActive = (path: string) => location === path;
+  
+  // Don't show the navigation on the auth page
+  if (location === "/auth") {
+    return null;
+  }
   
   return (
     <>
@@ -42,12 +49,21 @@ export default function BottomNavigation() {
           </button>
         </Link>
         
-        <Link href="/profile">
-          <button className="flex flex-col items-center justify-center px-1 py-1 text-gray-500">
-            <User className={`h-5 w-5 ${isActive("/profile") ? "text-primary" : ""}`} />
-            <span className={`text-xs mt-1 ${isActive("/profile") ? "text-primary" : ""}`}>Profile</span>
-          </button>
-        </Link>
+        {user ? (
+          <Link href="/profile">
+            <button className="flex flex-col items-center justify-center px-1 py-1 text-gray-500">
+              <User className={`h-5 w-5 ${isActive("/profile") ? "text-primary" : ""}`} />
+              <span className={`text-xs mt-1 ${isActive("/profile") ? "text-primary" : ""}`}>Profile</span>
+            </button>
+          </Link>
+        ) : (
+          <Link href="/auth">
+            <button className="flex flex-col items-center justify-center px-1 py-1 text-gray-500">
+              <LogIn className={`h-5 w-5 ${isActive("/auth") ? "text-primary" : ""}`} />
+              <span className={`text-xs mt-1 ${isActive("/auth") ? "text-primary" : ""}`}>Login</span>
+            </button>
+          </Link>
+        )}
       </nav>
       
       {showAddModal && (
