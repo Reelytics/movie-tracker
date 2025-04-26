@@ -131,6 +131,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
       
+      // Force redirection
+      window.location.href = '/';
+      
       toast({
         title: "Logged in",
         description: `Welcome back, ${data.username}!`,
@@ -159,6 +162,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Update query cache
       queryClient.setQueryData(['/api/user'], null);
+      
+      // Force redirection
+      window.location.href = '/auth';
       
       toast({
         title: "Logged out",
@@ -206,6 +212,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
+      
+      // Force redirection
+      window.location.href = '/';
       
       toast({
         title: "Account created",

@@ -43,11 +43,25 @@ export default function AuthPage() {
     });
   }, [user]);
   
+  // Check if user already in localStorage
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem('reelytics_user');
+      if (savedUser) {
+        // User is already logged in
+        console.log("User found in localStorage, redirecting to home page");
+        setLocation("/");
+      }
+    } catch (e) {
+      console.error('Error reading from localStorage', e);
+    }
+  }, [setLocation]);
+
   // Use useEffect for redirection instead of conditional rendering
   // This avoids the React hooks error
   useEffect(() => {
     if (user) {
-      console.log("User authenticated, redirecting to home page");
+      console.log("User authenticated via API, redirecting to home page");
       setLocation("/");
     }
   }, [user, setLocation]);
