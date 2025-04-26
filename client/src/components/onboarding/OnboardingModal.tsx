@@ -10,8 +10,8 @@ interface OnboardingModalProps {
 
 const steps = [
   {
-    title: "Track Your Movie Journey",
-    description: "Keep a record of every movie you watch and build your personal film library.",
+    title: "Welcome to Reelytics",
+    description: "Track every movie you watch and build your personal film analytics library.",
     icon: <Film className="text-white text-4xl" />,
     color: "from-primary to-blue-400",
   },
