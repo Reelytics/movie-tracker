@@ -40,7 +40,12 @@ export default function Library() {
     : [];
 
   const recentlyAdded = watchedMovies
-    ? [...watchedMovies].sort((a, b) => b.watchedAt.getTime() - a.watchedAt.getTime())
+    ? [...watchedMovies].sort((a, b) => {
+        // Convert string dates to Date objects for proper comparison
+        const dateA = new Date(a.watchedAt);
+        const dateB = new Date(b.watchedAt);
+        return dateB.getTime() - dateA.getTime();
+      })
     : [];
 
   return (
