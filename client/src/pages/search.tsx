@@ -108,6 +108,45 @@ export default function Search() {
   // Combined loading state
   const isLoading = isLoadingSearch || isLoadingGenre;
   
+  // Get genre-specific movies for category previews
+  const { data: actionMovies } = useQuery({
+    queryKey: ["genre-preview", GENRES.ACTION],
+    queryFn: () => getMoviesByGenre(GENRES.ACTION)
+  });
+  
+  const { data: comedyMovies } = useQuery({
+    queryKey: ["genre-preview", GENRES.COMEDY],
+    queryFn: () => getMoviesByGenre(GENRES.COMEDY)
+  });
+  
+  const { data: sciFiMovies } = useQuery({
+    queryKey: ["genre-preview", GENRES.SCIENCE_FICTION],
+    queryFn: () => getMoviesByGenre(GENRES.SCIENCE_FICTION)
+  });
+  
+  const { data: horrorMovies } = useQuery({
+    queryKey: ["genre-preview", GENRES.HORROR],
+    queryFn: () => getMoviesByGenre(GENRES.HORROR)
+  });
+  
+  // Function to get random movie from a genre that has a backdrop
+  const getRandomGenreMovie = (movies: TMDBMovie[] | undefined): TMDBMovie | null => {
+    if (!movies || movies.length === 0) return null;
+    
+    // Filter movies that have backdrop images
+    const moviesWithBackdrops = movies.filter(movie => movie.backdrop_path);
+    if (moviesWithBackdrops.length === 0) return null;
+    
+    // Return random movie with backdrop
+    return moviesWithBackdrops[Math.floor(Math.random() * moviesWithBackdrops.length)];
+  };
+  
+  // Get random movies for each genre category
+  const randomActionMovie = getRandomGenreMovie(actionMovies);
+  const randomComedyMovie = getRandomGenreMovie(comedyMovies);
+  const randomSciFiMovie = getRandomGenreMovie(sciFiMovies);
+  const randomHorrorMovie = getRandomGenreMovie(horrorMovies);
+  
   const clearRecentSearches = () => {
     setRecentSearches([]);
     localStorage.removeItem("recentSearches");
@@ -195,33 +234,96 @@ export default function Search() {
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Browse Categories</h3>
               <div className="grid grid-cols-2 gap-3">
+                {/* Action Category */}
                 <div 
-                  className="bg-gradient-to-r from-primary to-blue-400 text-white rounded-lg p-4 cursor-pointer"
+                  className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
                   onClick={() => navigate(`/search?genre=${GENRES.ACTION}`)}
                 >
-                  <h4 className="font-semibold mb-1">Action</h4>
-                  <p className="text-xs text-white text-opacity-80">Explore action movies</p>
+                  {randomActionMovie && randomActionMovie.backdrop_path ? (
+                    <>
+                      <img 
+                        src={`https://image.tmdb.org/t/p/w780${randomActionMovie.backdrop_path}`}
+                        alt="Action" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80"></div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-primary to-blue-400"></div>
+                  )}
+                  <div className="absolute bottom-2 left-3 text-white font-semibold">
+                    <h4 className="font-semibold mb-1">Action</h4>
+                    <p className="text-xs text-white text-opacity-80">Explore action movies</p>
+                  </div>
                 </div>
+                
+                {/* Comedy Category */}
                 <div 
-                  className="bg-gradient-to-r from-pink-500 to-pink-400 text-white rounded-lg p-4 cursor-pointer"
+                  className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
                   onClick={() => navigate(`/search?genre=${GENRES.COMEDY}`)}
                 >
-                  <h4 className="font-semibold mb-1">Comedy</h4>
-                  <p className="text-xs text-white text-opacity-80">Explore comedy movies</p>
+                  {randomComedyMovie && randomComedyMovie.backdrop_path ? (
+                    <>
+                      <img 
+                        src={`https://image.tmdb.org/t/p/w780${randomComedyMovie.backdrop_path}`}
+                        alt="Comedy" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80"></div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-pink-500 to-pink-400"></div>
+                  )}
+                  <div className="absolute bottom-2 left-3 text-white font-semibold">
+                    <h4 className="font-semibold mb-1">Comedy</h4>
+                    <p className="text-xs text-white text-opacity-80">Explore comedy movies</p>
+                  </div>
                 </div>
+                
+                {/* Science Fiction Category */}
                 <div 
-                  className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-lg p-4 cursor-pointer"
+                  className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
                   onClick={() => navigate(`/search?genre=${GENRES.SCIENCE_FICTION}`)}
                 >
-                  <h4 className="font-semibold mb-1">Science Fiction</h4>
-                  <p className="text-xs text-white text-opacity-80">Explore sci-fi movies</p>
+                  {randomSciFiMovie && randomSciFiMovie.backdrop_path ? (
+                    <>
+                      <img 
+                        src={`https://image.tmdb.org/t/p/w780${randomSciFiMovie.backdrop_path}`}
+                        alt="Science Fiction" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80"></div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-amber-500 to-yellow-400"></div>
+                  )}
+                  <div className="absolute bottom-2 left-3 text-white font-semibold">
+                    <h4 className="font-semibold mb-1">Science Fiction</h4>
+                    <p className="text-xs text-white text-opacity-80">Explore sci-fi movies</p>
+                  </div>
                 </div>
+                
+                {/* Horror Category */}
                 <div 
-                  className="bg-gradient-to-r from-purple-600 to-purple-400 text-white rounded-lg p-4 cursor-pointer"
+                  className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
                   onClick={() => navigate(`/search?genre=${GENRES.HORROR}`)}
                 >
-                  <h4 className="font-semibold mb-1">Horror</h4>
-                  <p className="text-xs text-white text-opacity-80">Explore horror movies</p>
+                  {randomHorrorMovie && randomHorrorMovie.backdrop_path ? (
+                    <>
+                      <img 
+                        src={`https://image.tmdb.org/t/p/w780${randomHorrorMovie.backdrop_path}`}
+                        alt="Horror" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80"></div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-purple-600 to-purple-400"></div>
+                  )}
+                  <div className="absolute bottom-2 left-3 text-white font-semibold">
+                    <h4 className="font-semibold mb-1">Horror</h4>
+                    <p className="text-xs text-white text-opacity-80">Explore horror movies</p>
+                  </div>
                 </div>
               </div>
             </div>
