@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import Search from "@/pages/search";
 import Library from "@/pages/library";
 import AuthPage from "@/pages/auth";
+import MovieDetails from "@/pages/movie-details";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
 import { ThemeProvider } from "next-themes";

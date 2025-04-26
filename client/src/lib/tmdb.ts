@@ -1,6 +1,9 @@
 import { TMDBMovie, TMDBMovieDetails } from "@/types";
 
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY || "32c7e47c8cc15c4ac3219c6f6c1b2c17"; // Demo API key
+const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+if (!API_KEY) {
+  console.error("Warning: TMDB API key is not set");
+}
 const BASE_URL = "https://api.themoviedb.org/3";
 
 // Search movies

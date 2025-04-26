@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { TMDBMovie, TMDBMovieDetails } from "@/types";
-
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY || "32c7e47c8cc15c4ac3219c6f6c1b2c17"; // Demo API key for example
-const BASE_URL = "https://api.themoviedb.org/3";
+import * as tmdbApi from "@/lib/tmdb";
 
 export function useMovieApi() {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,16 +13,8 @@ export function useMovieApi() {
     setError(null);
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=false`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to search movies");
-      }
-
-      const data = await response.json();
-      return data.results;
+      const results = await tmdbApi.searchMovies(query);
+      return results;
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       return [];
@@ -39,16 +29,8 @@ export function useMovieApi() {
     setError(null);
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/trending/movie/week?api_key=${API_KEY}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch trending movies");
-      }
-
-      const data = await response.json();
-      return data.results;
+      const results = await tmdbApi.getTrendingMovies();
+      return results;
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       return [];
@@ -63,27 +45,8 @@ export function useMovieApi() {
     setError(null);
 
     try {
-      // Get movie details
-      const detailsResponse = await fetch(
-        `${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=credits`
-      );
-
-      if (!detailsResponse.ok) {
-        throw new Error("Failed to fetch movie details");
-      }
-
-      const details = await detailsResponse.json();
-
-      // Format the data
-      const director = details.credits?.crew?.find(
-        (person: any) => person.job === "Director"
-      )?.name || "Unknown Director";
-
-      return {
-        ...details,
-        director,
-        cast: details.credits?.cast || []
-      };
+      const details = await tmdbApi.getMovieDetails(movieId);
+      return details;
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       throw err;
@@ -98,16 +61,8 @@ export function useMovieApi() {
     setError(null);
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/movie/${movieId}/similar?api_key=${API_KEY}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch similar movies");
-      }
-
-      const data = await response.json();
-      return data.results;
+      const results = await tmdbApi.getSimilarMovies(movieId);
+      return results;
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       return [];
