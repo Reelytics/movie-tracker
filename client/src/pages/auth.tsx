@@ -110,7 +110,7 @@ export default function AuthPage() {
         <div className="mx-auto w-full max-w-md">
           <div className="flex items-center justify-center mb-6">
             <Film className="h-10 w-10 text-primary mr-2" />
-            <h1 className="text-2xl font-bold">MovieTracker</h1>
+            <h1 className="text-2xl font-bold">Reelytics</h1>
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -253,10 +253,10 @@ export default function AuthPage() {
       {/* Right side - Hero section */}
       <div className="hidden bg-gray-900 md:flex md:w-1/2 md:flex-col md:items-center md:justify-center p-12">
         <div className="max-w-md text-center text-white">
-          <UserIcon className="h-12 w-12 mx-auto mb-6 text-primary" />
-          <h2 className="text-3xl font-bold mb-4">Track Your Movie Journey</h2>
+          <Film className="h-12 w-12 mx-auto mb-6 text-primary" />
+          <h2 className="text-3xl font-bold mb-4">Welcome to Reelytics</h2>
           <p className="mb-6">
-            Keep a record of every movie you watch, rate them, write reviews, and discover new films based on your taste.
+            Your personal movie diary. Track films you've watched, rate them, write reviews, and discover new movies tailored to your taste.
           </p>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="rounded-lg bg-gray-800 p-3">

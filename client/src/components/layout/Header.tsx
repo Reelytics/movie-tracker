@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Search, LogOut, User, LogIn } from "lucide-react";
+import { Bell, Search, LogOut, User, LogIn, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link, useLocation } from "wouter";
@@ -35,7 +35,10 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between">
       <Link href="/">
-        <h1 className="text-2xl font-semibold cursor-pointer">MovieDiary</h1>
+        <div className="flex items-center">
+          <Film className="h-6 w-6 text-primary mr-2" />
+          <h1 className="text-2xl font-semibold cursor-pointer">Reelytics</h1>
+        </div>
       </Link>
       <div className="flex items-center space-x-4">
         <Button variant="ghost" size="icon" className="p-2" onClick={handleSearchClick}>
