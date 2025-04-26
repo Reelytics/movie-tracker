@@ -190,7 +190,7 @@ export default function Home() {
           {/* Action Category */}
           <div 
             className="relative h-40 rounded-xl overflow-hidden cursor-pointer shadow-md"
-            onClick={() => navigate(`/genre?id=${GENRES.ACTION.toString()}`)}
+            onClick={() => navigate(`/genres/action`)}
           >
             {randomActionMovie && randomActionMovie.backdrop_path ? (
               <>
