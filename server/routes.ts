@@ -36,86 +36,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.status(500).json({ message: err.message || "Internal server error" });
   };
 
-  // Auth-specific routes
-  apiRouter.post("/login", (req, res, next) => {
-    passport.authenticate("local", (err: Error, user: any) => {
-      if (err) return next(err);
-      if (!user) return res.status(401).json({ message: "Invalid username or password" });
-      
-      req.login(user, (err) => {
-        if (err) return next(err);
-        const userResponse = { ...user };
-        delete userResponse.passwordHash; // Don't send the password hash to the client
-        res.json(userResponse);
-      });
-    })(req, res, next);
-  });
-
-  apiRouter.post("/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.status(200).json({ message: "Logged out successfully" });
-    });
-  });
-  
-  apiRouter.post("/register", async (req, res, next) => {
-    try {
-      // Check for existing username
-      const existingUser = await storage.getUserByUsername(req.body.username);
-      if (existingUser) {
-        return res.status(400).json({ 
-          error: "username_taken", 
-          message: "This username is already taken. Please choose a different username." 
-        });
-      }
-      
-      // Check for existing email
-      const existingEmail = await storage.getUserByEmail(req.body.email);
-      if (existingEmail) {
-        return res.status(400).json({ 
-          error: "email_taken", 
-          message: "This email is already registered. Please use a different email or try logging in." 
-        });
-      }
-
-      // Use the hashPassword function from auth.ts
-      // Import the function first
-      const { hashPassword } = await import('./auth');
-      const passwordHash = await hashPassword(req.body.password);
-
-      // Create the user
-      const userData = {
-        username: req.body.username,
-        passwordHash,
-        email: req.body.email,
-        fullName: req.body.fullName || null,
-        bio: null,
-        profilePicture: null
-      };
-
-      const user = await storage.createUser(userData);
-
-      req.login(user, (err) => {
-        if (err) return next(err);
-        const userResponse = { ...user };
-        delete userResponse.passwordHash; // Don't send the password hash to the client
-        res.status(201).json(userResponse);
-      });
-    } catch (error) {
-      handleError(error as Error, res);
-    }
-  });
+  // Auth routes are now handled in auth.ts
+  // We'll skip duplicate definition here to avoid conflicts
 
   // User routes
-  apiRouter.get("/user", (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-    
-    const userResponse = { ...req.user };
-    delete userResponse.passwordHash; // Don't send the password hash to the client
-    res.json(userResponse);
-  });
   
   apiRouter.get("/users/current", ensureAuthenticated, async (req, res) => {
     try {
@@ -157,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Filter out sensitive information
-      const userInfo = { ...updatedUser };
+      const userInfo: any = { ...updatedUser };
       delete userInfo.passwordHash;
       
       return res.json(userInfo);

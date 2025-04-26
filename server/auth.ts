@@ -56,7 +56,10 @@ export function setupAuth(app: Express) {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
     }
   };
 
@@ -117,7 +120,7 @@ export function setupAuth(app: Express) {
 
       req.login(user, (err) => {
         if (err) return next(err);
-        const userResponse = { ...user };
+        const userResponse: any = { ...user };
         delete userResponse.passwordHash; // Don't send the password hash to the client
         res.status(201).json(userResponse);
       });
@@ -133,7 +136,7 @@ export function setupAuth(app: Express) {
       
       req.login(user, (err) => {
         if (err) return next(err);
-        const userResponse = { ...user };
+        const userResponse: any = { ...user };
         delete userResponse.passwordHash; // Don't send the password hash to the client
         res.json(userResponse);
       });
@@ -152,7 +155,7 @@ export function setupAuth(app: Express) {
       return res.status(401).json({ error: "Not authenticated" });
     }
     
-    const userResponse = { ...req.user };
+    const userResponse: any = { ...req.user };
     delete userResponse.passwordHash; // Don't send the password hash to the client
     res.json(userResponse);
   });
