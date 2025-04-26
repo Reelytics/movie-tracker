@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import imageCompression from "browser-image-compression";
+import ImageCropper from "@/components/profile/ImageCropper";
 import { UserProfile } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,6 +41,8 @@ export default function EditProfile() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [profilePictureURL, setProfilePictureURL] = useState<string | null>(null);
+  const [tempImageURL, setTempImageURL] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState<boolean>(false);
 
   // Fetch user profile data
   const { data: profile, isLoading: loadingProfile } = useQuery<UserProfile>({
@@ -109,47 +112,59 @@ export default function EditProfile() {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        // Show loading toast
         toast({
           title: "Processing image",
-          description: "Optimizing your image for upload...",
+          description: "Loading image for cropping...",
           duration: 2000,
         });
         
-        // Compress the image
-        const options = {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 500,
-          useWebWorker: true
-        };
-        
-        const compressedFile = await imageCompression(file, options);
-        
-        // Convert to data URL
+        // Convert to data URL for preview in cropper
         const reader = new FileReader();
         reader.onload = (event) => {
           const dataURL = event.target?.result as string;
-          setProfilePictureURL(dataURL);
-          form.setValue("profilePicture", dataURL);
-          
-          // Show success toast
-          toast({
-            title: "Image processed",
-            description: `Reduced from ${(file.size / 1024 / 1024).toFixed(2)}MB to ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`,
-            duration: 3000,
-          });
+          setTempImageURL(dataURL);
+          setShowCropper(true);
         };
-        reader.readAsDataURL(compressedFile);
+        reader.readAsDataURL(file);
       } catch (error) {
-        console.error("Error compressing image:", error);
+        console.error("Error loading image:", error);
         toast({
           title: "Error",
-          description: "Failed to process image. Please try a smaller image.",
+          description: "Failed to load image. Please try again.",
           variant: "destructive",
           duration: 5000,
         });
       }
     }
+  };
+  
+  const handleCropComplete = async (croppedImageURL: string) => {
+    try {
+      // The image is already cropped, so we just need to save it
+      setProfilePictureURL(croppedImageURL);
+      form.setValue("profilePicture", croppedImageURL);
+      setShowCropper(false);
+      setTempImageURL(null);
+      
+      toast({
+        title: "Image cropped",
+        description: "Your profile picture has been cropped successfully.",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error saving cropped image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save cropped image. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
+  };
+  
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setTempImageURL(null);
   };
   
   const removeProfilePicture = () => {
@@ -312,6 +327,16 @@ export default function EditProfile() {
           </div>
         </form>
       </Form>
+      
+      {/* Image Cropper */}
+      {showCropper && tempImageURL && (
+        <ImageCropper
+          image={tempImageURL}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          aspectRatio={1}
+        />
+      )}
     </div>
   );
 }
