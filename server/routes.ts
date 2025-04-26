@@ -70,7 +70,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stats = await storage.getUserStats(userId);
       
       // Filter out sensitive information
-      const userInfo = { ...req.user };
+      const userInfo = { ...req.user } as any;
+      delete userInfo.passwordHash;
+      
+      const profile = {
+        user: userInfo,
+        stats
+      };
+      
+      return res.json(profile);
+    } catch (error) {
+      handleError(error as Error, res);
+    }
+  });
+  
+  apiRouter.get("/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID format" });
+      }
+      
+      // Get user and stats
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const stats = await storage.getUserStats(userId);
+      
+      // Remove sensitive information
+      const userInfo = { ...user } as any;
       delete userInfo.passwordHash;
       
       const profile = {
@@ -125,9 +155,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  apiRouter.get("/users/:id/movies/watched", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID format" });
+      }
+      
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const watchedMovies = await storage.getWatchedMovies(userId);
+      return res.json(watchedMovies);
+    } catch (error) {
+      handleError(error as Error, res);
+    }
+  });
+  
   apiRouter.get("/movies/favorites", ensureAuthenticated, async (req, res) => {
     try {
       const userId = req.user?.id as number;
+      
+      const favorites = await storage.getFavorites(userId);
+      return res.json(favorites);
+    } catch (error) {
+      handleError(error as Error, res);
+    }
+  });
+  
+  apiRouter.get("/users/:id/movies/favorites", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID format" });
+      }
+      
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
       
       const favorites = await storage.getFavorites(userId);
       return res.json(favorites);
