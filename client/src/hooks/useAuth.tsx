@@ -117,13 +117,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
       
-      // Immediately refetch user data to ensure we have the latest
-      refetch();
-      
-      toast({
-        title: "Logged in",
-        description: `Welcome back, ${data.username}!`,
-      });
+      // Add a small delay to ensure state updates before redirection
+      setTimeout(() => {
+        // Force refetch all queries to ensure data is fresh
+        queryClient.invalidateQueries();
+        
+        toast({
+          title: "Logged in",
+          description: `Welcome back, ${data.username}!`,
+        });
+      }, 100);
     },
     onError: (error) => {
       console.error("Login error:", error);
@@ -188,13 +191,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
       
-      // Immediately refetch user data to ensure we have the latest
-      refetch();
-      
-      toast({
-        title: "Account created",
-        description: `Welcome to Reelytics, ${data.username}!`,
-      });
+      // Add a small delay to ensure state updates before redirection
+      setTimeout(() => {
+        // Force refetch all queries to ensure data is fresh
+        queryClient.invalidateQueries();
+        
+        toast({
+          title: "Account created",
+          description: `Welcome to Reelytics, ${data.username}!`,
+        });
+      }, 100);
     },
     onError: (error) => {
       console.error("Registration error:", error);

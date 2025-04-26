@@ -68,15 +68,19 @@ export function setupAuth(app: Express) {
     console.log('Request Method:', req.method);
     console.log('Request Cookies:', req.headers.cookie);
     
-    // In development, allow the Vite dev server
-    const allowedOrigins = ['http://localhost:5000', 'http://localhost:3000', 'https://replit.dev'];
+    // In development, allow the Vite dev server and Replit domains
     const origin = req.headers.origin as string;
     
-    if (origin && allowedOrigins.includes(origin)) {
-      res.header('Access-Control-Allow-Origin', origin);
+    if (origin) {
+      // Allow any replit.dev domain and local dev servers
+      if (origin.includes('replit.dev') || 
+          origin.includes('localhost') || 
+          origin.includes('127.0.0.1')) {
+        res.header('Access-Control-Allow-Origin', origin);
+      }
     } else {
       // For requests without origin like Curl from CLI
-      res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
+      res.header('Access-Control-Allow-Origin', '*');
     }
     
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
