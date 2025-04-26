@@ -19,10 +19,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const apiRouter = express.Router();
   
   // Middleware to check if user is authenticated
-  const ensureAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+  const ensureAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
+    // First check if user is authenticated with passport session
     if (req.isAuthenticated()) {
       return next();
     }
+    
+    // Fallback: Check for custom auth headers (for localStorage-based authentication)
+    const userId = req.headers['x-user-id'];
+    const userAuth = req.headers['x-user-auth'];
+    
+    if (userId && userAuth === 'true') {
+      try {
+        // Get the user from storage
+        const user = await storage.getUser(Number(userId));
+        if (user) {
+          // Set the user on the request
+          req.user = user;
+          return next();
+        }
+      } catch (error) {
+        console.error("Error authenticating with headers:", error);
+      }
+    }
+    
     return res.status(401).json({ message: "Not authenticated" });
   };
 

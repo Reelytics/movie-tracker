@@ -77,12 +77,25 @@ export default function RateMovieModal({
         };
         
         try {
+          // Get auth token from localStorage
+          const savedUser = localStorage.getItem('reelytics_user');
+          let authHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+          };
+          
+          // Add custom auth header if we have user data in localStorage
+          if (savedUser) {
+            const userData = JSON.parse(savedUser);
+            if (userData && userData.id) {
+              authHeaders["X-User-Id"] = userData.id.toString();
+              authHeaders["X-User-Auth"] = "true";
+            }
+          }
+          
           const response = await fetch("/api/movies", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Requested-With": "XMLHttpRequest"
-            },
+            headers: authHeaders,
             body: JSON.stringify(movieData),
             credentials: "include"
           });
@@ -103,12 +116,25 @@ export default function RateMovieModal({
       } else if (watchedMovie) {
         // Update existing watched movie
         try {
+          // Get auth token from localStorage
+          const savedUser = localStorage.getItem('reelytics_user');
+          let authHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+          };
+          
+          // Add custom auth header if we have user data in localStorage
+          if (savedUser) {
+            const userData = JSON.parse(savedUser);
+            if (userData && userData.id) {
+              authHeaders["X-User-Id"] = userData.id.toString();
+              authHeaders["X-User-Auth"] = "true";
+            }
+          }
+          
           const response = await fetch(`/api/movies/watched/${watchedMovie.id}`, {
             method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Requested-With": "XMLHttpRequest"
-            },
+            headers: authHeaders,
             body: JSON.stringify({
               rating,
               review: review.trim() ? review : null,
