@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // Get current user
   const { data: user, error, isLoading } = useQuery<User | null>({
-    queryKey: ['/api/users/current'],
+    queryKey: ['/api/user'],
     retry: false,
     // If 401, don't throw error, just return null
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
       console.log("Logging in user:", credentials.username);
-      const response = await apiRequest("POST", "/api/auth/login", credentials);
+      const response = await apiRequest("POST", "/api/login", credentials);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Invalid username or password");
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await response.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['/api/users/current'], data);
+      queryClient.setQueryData(['/api/user'], data);
       toast({
         title: "Logged in",
         description: `Welcome back, ${data.username}!`,
@@ -79,10 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/auth/logout");
+      await apiRequest("POST", "/api/logout");
     },
     onSuccess: () => {
-      queryClient.setQueryData(['/api/users/current'], null);
+      queryClient.setQueryData(['/api/user'], null);
       // Invalidate all queries to refresh data
       queryClient.invalidateQueries();
       toast({
