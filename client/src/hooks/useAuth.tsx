@@ -51,15 +51,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         console.log("Fetching current user data...");
         const response = await fetch('/api/user', { 
-          credentials: 'include',
+          credentials: 'include', // Important: This ensures cookies are sent
           headers: { 
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache, no-store',
             'Pragma': 'no-cache'
-          }
+          },
+          mode: 'cors' // Explicitly set CORS mode
         });
         
         console.log("User API response status:", response.status);
+        // Convert headers to object to avoid TypeScript iterator issues
+        const headers: Record<string, string> = {};
+        response.headers.forEach((value, key) => {
+          headers[key] = value;
+        });
+        console.log("User API response headers:", headers);
         
         if (response.status === 401) {
           console.log("User not authenticated");
@@ -72,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         const userData = await response.json();
-        console.log("User data retrieved:", userData ? "User authenticated" : "No user data");
+        console.log("User data retrieved:", userData);
         return userData;
       } catch (error) {
         console.error('Error fetching user:', error);

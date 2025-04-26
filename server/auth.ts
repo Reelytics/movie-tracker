@@ -61,10 +61,24 @@ export async function createTestUser() {
 }
 
 export function setupAuth(app: Express) {
-  // Add security headers
+  // Add security headers and CORS configuration
   app.use((req, res, next) => {
-    // In development, we'll use a simpler approach that works with the Vite dev server
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    // Log origin for debugging
+    console.log('Request Origin:', req.headers.origin);
+    console.log('Request Method:', req.method);
+    console.log('Request Cookies:', req.headers.cookie);
+    
+    // In development, allow the Vite dev server
+    const allowedOrigins = ['http://localhost:5000', 'http://localhost:3000', 'https://replit.dev'];
+    const origin = req.headers.origin as string;
+    
+    if (origin && allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    } else {
+      // For requests without origin like Curl from CLI
+      res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
+    }
+    
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -86,15 +100,14 @@ export function setupAuth(app: Express) {
   // Configure session
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "movie-diary-secret",
-    resave: true, // Changed to true to ensure session is saved
-    saveUninitialized: true, // Changed to true for new sessions
+    resave: true, // Ensure session is saved
+    saveUninitialized: true, // Create session for new requests
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
       secure: false, // Disable secure for development
-      sameSite: 'lax',
+      sameSite: 'lax', // Lax is more reliable for same-origin requests
       path: '/',
-      domain: undefined // Let browser set domain automatically
     },
     name: 'reelytics.sid', // Custom name for the session cookie
     store: storage.sessionStore // Use our storage session store
@@ -135,12 +148,23 @@ export function setupAuth(app: Express) {
     }),
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
+  passport.serializeUser((user, done) => {
+    console.log(`Serializing user: ${user.id} (${user.username})`);
+    done(null, user.id);
+  });
+  
   passport.deserializeUser(async (id: number, done) => {
     try {
+      console.log(`Deserializing user with ID: ${id}`);
       const user = await storage.getUser(id);
-      done(null, user);
+      if (!user) {
+        console.log(`User with ID ${id} not found during deserialization`);
+      } else {
+        console.log(`Successfully deserialized user: ${user.username}`);
+      }
+      done(null, user || null);
     } catch (error) {
+      console.error(`Error deserializing user:`, error);
       done(error);
     }
   });
