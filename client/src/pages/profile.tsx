@@ -22,43 +22,121 @@ export default function Profile() {
   // Fetch profile data - either current user or specified user
   const { data: profile, isLoading: loadingProfile } = useQuery<UserProfile>({
     queryKey: isCurrentUser ? ["/api/users/current"] : ["/api/users", userId],
-    queryFn: isCurrentUser 
-      ? undefined 
-      : async () => {
-          const response = await fetch(`/api/users/${userId}`);
-          if (!response.ok) {
-            throw new Error("Failed to fetch user profile");
+    queryFn: async ({ queryKey }) => {
+      const url = isCurrentUser 
+        ? "/api/users/current" 
+        : `/api/users/${userId}`;
+        
+      // Add authentication headers from localStorage if available
+      let headers: HeadersInit = {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      };
+      
+      try {
+        const savedUser = localStorage.getItem('reelytics_user');
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          if (userData && userData.id) {
+            headers["X-User-Id"] = userData.id.toString();
+            headers["X-User-Auth"] = "true";
           }
-          return response.json();
         }
+      } catch (e) {
+        console.error("Error reading from localStorage:", e);
+      }
+      
+      const response = await fetch(url, {
+        credentials: "include",
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch user profile");
+      }
+      
+      return response.json();
+    }
   });
 
   // Fetch watched movies - either current user or specified user
   const { data: watchedMovies, isLoading: loadingMovies } = useQuery<WatchedMovieWithDetails[]>({
     queryKey: isCurrentUser ? ["/api/movies/watched"] : ["/api/users", userId, "movies/watched"],
-    queryFn: isCurrentUser 
-      ? undefined 
-      : async () => {
-          const response = await fetch(`/api/users/${userId}/movies/watched`);
-          if (!response.ok) {
-            throw new Error("Failed to fetch watched movies");
+    queryFn: async ({ queryKey }) => {
+      const url = isCurrentUser 
+        ? "/api/movies/watched" 
+        : `/api/users/${userId}/movies/watched`;
+        
+      // Add authentication headers from localStorage if available
+      let headers: HeadersInit = {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      };
+      
+      try {
+        const savedUser = localStorage.getItem('reelytics_user');
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          if (userData && userData.id) {
+            headers["X-User-Id"] = userData.id.toString();
+            headers["X-User-Auth"] = "true";
           }
-          return response.json();
         }
+      } catch (e) {
+        console.error("Error reading from localStorage:", e);
+      }
+      
+      const response = await fetch(url, {
+        credentials: "include",
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch watched movies");
+      }
+      
+      return response.json();
+    }
   });
 
   // Fetch favorite movies - either current user or specified user
   const { data: favoriteMovies, isLoading: loadingFavorites } = useQuery<WatchedMovieWithDetails[]>({
     queryKey: isCurrentUser ? ["/api/movies/favorites"] : ["/api/users", userId, "movies/favorites"],
-    queryFn: isCurrentUser 
-      ? undefined 
-      : async () => {
-          const response = await fetch(`/api/users/${userId}/movies/favorites`);
-          if (!response.ok) {
-            throw new Error("Failed to fetch favorite movies");
+    queryFn: async ({ queryKey }) => {
+      const url = isCurrentUser 
+        ? "/api/movies/favorites" 
+        : `/api/users/${userId}/movies/favorites`;
+        
+      // Add authentication headers from localStorage if available
+      let headers: HeadersInit = {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      };
+      
+      try {
+        const savedUser = localStorage.getItem('reelytics_user');
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          if (userData && userData.id) {
+            headers["X-User-Id"] = userData.id.toString();
+            headers["X-User-Auth"] = "true";
           }
-          return response.json();
         }
+      } catch (e) {
+        console.error("Error reading from localStorage:", e);
+      }
+      
+      const response = await fetch(url, {
+        credentials: "include",
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch favorite movies");
+      }
+      
+      return response.json();
+    }
   });
 
   // Set document title
