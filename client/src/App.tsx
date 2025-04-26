@@ -43,6 +43,9 @@ function Router() {
               <Profile />
             </ProtectedRoute>
           </Route>
+          <Route path="/profile/:id">
+            <Profile />
+          </Route>
           <Route path="/search">
             <ProtectedRoute>
               <Search />

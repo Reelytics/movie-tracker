@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WatchedMovieWithDetails, UserProfile } from "@shared/schema";
 import ProfileHeader from "@/components/profile/ProfileHeader";
@@ -7,21 +7,58 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Filter, SortAsc, Grid, List } from "lucide-react";
+import { useParams, useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Profile() {
-  // Fetch user profile data
+  const params = useParams();
+  const userId = params.id ? parseInt(params.id) : null;
+  const { user: currentUser } = useAuth();
+  const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+  
+  // Determine if we're looking at the current user's profile or another user's profile
+  const isCurrentUser = !userId || (currentUser && userId === currentUser.id);
+  
+  // Fetch profile data - either current user or specified user
   const { data: profile, isLoading: loadingProfile } = useQuery<UserProfile>({
-    queryKey: ["/api/users/current"]
+    queryKey: isCurrentUser ? ["/api/users/current"] : ["/api/users", userId],
+    queryFn: isCurrentUser 
+      ? undefined 
+      : async () => {
+          const response = await fetch(`/api/users/${userId}`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch user profile");
+          }
+          return response.json();
+        }
   });
 
-  // Fetch watched movies
+  // Fetch watched movies - either current user or specified user
   const { data: watchedMovies, isLoading: loadingMovies } = useQuery<WatchedMovieWithDetails[]>({
-    queryKey: ["/api/movies/watched"]
+    queryKey: isCurrentUser ? ["/api/movies/watched"] : ["/api/users", userId, "movies/watched"],
+    queryFn: isCurrentUser 
+      ? undefined 
+      : async () => {
+          const response = await fetch(`/api/users/${userId}/movies/watched`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch watched movies");
+          }
+          return response.json();
+        }
   });
 
-  // Fetch favorite movies
+  // Fetch favorite movies - either current user or specified user
   const { data: favoriteMovies, isLoading: loadingFavorites } = useQuery<WatchedMovieWithDetails[]>({
-    queryKey: ["/api/movies/favorites"]
+    queryKey: isCurrentUser ? ["/api/movies/favorites"] : ["/api/users", userId, "movies/favorites"],
+    queryFn: isCurrentUser 
+      ? undefined 
+      : async () => {
+          const response = await fetch(`/api/users/${userId}/movies/favorites`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch favorite movies");
+          }
+          return response.json();
+        }
   });
 
   // Set document title
@@ -96,10 +133,20 @@ export default function Profile() {
             </Button>
           </div>
           <div className="flex space-x-2">
-            <Button variant="ghost" size="icon" className="w-7 h-7 text-gray-600 bg-gray-100 rounded-md">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={`w-7 h-7 rounded-md ${layout === 'grid' ? 'text-gray-600 bg-gray-100' : 'text-gray-400'}`}
+              onClick={() => setLayout('grid')}
+            >
               <Grid className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="w-7 h-7 text-gray-400 rounded-md">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={`w-7 h-7 rounded-md ${layout === 'list' ? 'text-gray-600 bg-gray-100' : 'text-gray-400'}`}
+              onClick={() => setLayout('list')}
+            >
               <List className="h-4 w-4" />
             </Button>
           </div>
@@ -109,7 +156,7 @@ export default function Profile() {
           <MovieGrid 
             movies={watchedMovies || []} 
             isLoading={loadingMovies} 
-            layout="grid"
+            layout={layout}
           />
         </TabsContent>
         
@@ -117,7 +164,7 @@ export default function Profile() {
           <MovieGrid 
             movies={favoriteMovies || []} 
             isLoading={loadingFavorites} 
-            layout="grid"
+            layout={layout}
           />
         </TabsContent>
         
