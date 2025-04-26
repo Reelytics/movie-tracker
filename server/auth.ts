@@ -22,7 +22,17 @@ export async function hashPassword(password: string) {
 }
 
 export async function comparePasswords(supplied: string, stored: string) {
+  if (!stored || !stored.includes(".")) {
+    console.error("Invalid stored password format (missing salt separator):", stored);
+    return false;
+  }
+  
   const [hashed, salt] = stored.split(".");
+  if (!hashed || !salt) {
+    console.error("Invalid stored password format (missing hash or salt):", { hashed, salt });
+    return false;
+  }
+  
   const hashedBuf = Buffer.from(hashed, "hex");
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
   return timingSafeEqual(hashedBuf, suppliedBuf);
@@ -105,7 +115,10 @@ export function setupAuth(app: Express) {
           return done(null, false);
         }
         
-        console.log(`User found, comparing passwords`);
+        console.log(`User found, comparing passwords for DB format: ${JSON.stringify(user)}`);
+        // Note: The User type from schema.ts uses camelCase (passwordHash) 
+        // but the DB column is snake_case (password_hash)
+        // The DB client provides the property with the camelCase name
         const passwordsMatch = await comparePasswords(password, user.passwordHash);
         
         if (!passwordsMatch) {
