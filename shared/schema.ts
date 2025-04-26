@@ -111,6 +111,7 @@ export const userStatsSchema = z.object({
   favorites: z.number(),
   reviews: z.number(),
   followers: z.number(),
+  following: z.number(),
 });
 
 export type UserStats = z.infer<typeof userStatsSchema>;

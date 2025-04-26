@@ -1,12 +1,23 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { UserStats } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { UserCircle, UserPlus, UserMinus, Check } from "lucide-react";
+import { UserCircle, UserPlus, UserMinus, Check, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
 
 interface ProfileHeaderProps {
   user: {
@@ -19,11 +30,27 @@ interface ProfileHeaderProps {
   stats: UserStats;
 }
 
+type UserListItem = {
+  id: number;
+  username: string;
+  fullName: string | null;
+  profilePicture: string | null;
+  bio: string | null;
+};
+
 export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
   const { user: currentUser } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [, navigate] = useLocation();
   const { toast } = useToast();
+  
+  // State for followers/following modals
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [followers, setFollowers] = useState<UserListItem[]>([]);
+  const [following, setFollowing] = useState<UserListItem[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   
   // Check if the current user is following the profile user
   useEffect(() => {
@@ -41,6 +68,63 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
       checkFollowStatus();
     }
   }, [currentUser, user.id]);
+  
+  // Function to fetch followers
+  const fetchFollowers = async () => {
+    if (loadingUsers) return;
+    
+    setLoadingUsers(true);
+    try {
+      const response = await apiRequest("GET", `/api/users/${user.id}/followers`);
+      if (!response.ok) throw new Error("Failed to fetch followers");
+      const data = await response.json();
+      setFollowers(data);
+      setShowFollowersModal(true);
+    } catch (error) {
+      console.error("Error fetching followers:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch followers",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+  
+  // Function to fetch following
+  const fetchFollowing = async () => {
+    if (loadingUsers) return;
+    
+    setLoadingUsers(true);
+    try {
+      const response = await apiRequest("GET", `/api/users/${user.id}/following`);
+      if (!response.ok) throw new Error("Failed to fetch following");
+      const data = await response.json();
+      setFollowing(data);
+      setShowFollowingModal(true);
+    } catch (error) {
+      console.error("Error fetching following:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch following list",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+  
+  // Navigate to a user's profile
+  const navigateToProfile = (userId: number) => {
+    if (currentUser?.id === userId) {
+      navigate("/profile");
+    } else {
+      navigate(`/profile/${userId}`);
+    }
+    setShowFollowersModal(false);
+    setShowFollowingModal(false);
+  };
   
   const handleFollowToggle = async () => {
     if (!currentUser) return;
@@ -147,16 +231,138 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
             <div className="font-semibold">{stats.favorites}</div>
             <div className="text-xs text-gray-500">Favorites</div>
           </div>
-          <div className="text-center">
-            <div className="font-semibold">{stats.reviews}</div>
-            <div className="text-xs text-gray-500">Reviews</div>
-          </div>
-          <div className="text-center">
+          <button 
+            onClick={fetchFollowing}
+            disabled={loadingUsers}
+            className="text-center focus:outline-none"
+          >
+            <div className="font-semibold">{stats.following}</div>
+            <div className="text-xs text-gray-500">Following</div>
+          </button>
+          <button 
+            onClick={fetchFollowers}
+            disabled={loadingUsers}
+            className="text-center focus:outline-none"
+          >
             <div className="font-semibold">{stats.followers}</div>
             <div className="text-xs text-gray-500">Followers</div>
-          </div>
+          </button>
         </div>
       </div>
+      
+      {/* Followers Modal */}
+      <Dialog open={showFollowersModal} onOpenChange={setShowFollowersModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">Followers</DialogTitle>
+            <DialogDescription className="text-center">
+              People who follow {user.username}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {loadingUsers ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            </div>
+          ) : followers.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No followers yet
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-y-auto">
+              {followers.map((follower) => (
+                <div key={follower.id} className="flex items-center py-3 px-1">
+                  <button
+                    onClick={() => navigateToProfile(follower.id)}
+                    className="flex items-center flex-1 focus:outline-none"
+                  >
+                    <Avatar className="h-10 w-10 mr-3">
+                      {follower.profilePicture ? (
+                        <AvatarImage src={follower.profilePicture} alt={follower.username} />
+                      ) : (
+                        <AvatarFallback className="bg-gradient-to-r from-primary to-pink-500 text-white">
+                          <UserCircle className="h-5 w-5" />
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div className="text-left">
+                      <div className="font-medium">{follower.username}</div>
+                      <div className="text-xs text-gray-500 truncate max-w-[200px]">
+                        {follower.fullName || ''}
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          <DialogFooter className="sm:justify-center">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Following Modal */}
+      <Dialog open={showFollowingModal} onOpenChange={setShowFollowingModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">Following</DialogTitle>
+            <DialogDescription className="text-center">
+              People {user.username} follows
+            </DialogDescription>
+          </DialogHeader>
+          
+          {loadingUsers ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            </div>
+          ) : following.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              Not following anyone yet
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-y-auto">
+              {following.map((followed) => (
+                <div key={followed.id} className="flex items-center py-3 px-1">
+                  <button
+                    onClick={() => navigateToProfile(followed.id)}
+                    className="flex items-center flex-1 focus:outline-none"
+                  >
+                    <Avatar className="h-10 w-10 mr-3">
+                      {followed.profilePicture ? (
+                        <AvatarImage src={followed.profilePicture} alt={followed.username} />
+                      ) : (
+                        <AvatarFallback className="bg-gradient-to-r from-primary to-pink-500 text-white">
+                          <UserCircle className="h-5 w-5" />
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div className="text-left">
+                      <div className="font-medium">{followed.username}</div>
+                      <div className="text-xs text-gray-500 truncate max-w-[200px]">
+                        {followed.fullName || ''}
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          <DialogFooter className="sm:justify-center">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
