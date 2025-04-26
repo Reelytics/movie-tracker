@@ -39,12 +39,28 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+    
+    // Log details about the error for debugging
+    console.error(`Error processing request ${req.method} ${req.path}:`, {
+      error: err.message,
+      stack: err.stack,
+      status,
+      userId: req.user?.id || 'not authenticated',
+      timestamp: new Date().toISOString()
+    });
 
+    // For authentication errors, provide a clear message
+    if (status === 401) {
+      return res.status(401).json({ 
+        error: "authentication_required",
+        message: "You must be logged in to access this resource"
+      });
+    }
+    
     res.status(status).json({ message });
-    throw err;
   });
 
   // importantly only setup vite in development and after

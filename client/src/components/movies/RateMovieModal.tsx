@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import Rating from "@/components/ui/rating";
+import { useAuth } from "@/hooks/useAuth";
 
 interface RateMovieModalProps {
   watchedMovie?: WatchedMovieWithDetails;
@@ -36,10 +37,29 @@ export default function RateMovieModal({
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  // Verify authentication status first
+  useEffect(() => {
+    if (isOpen && !user) {
+      toast({
+        title: "Authentication required",
+        description: "You need to be logged in to rate movies.",
+        variant: "destructive",
+        duration: 5000
+      });
+      onClose();
+    }
+  }, [isOpen, user, toast, onClose]);
   
   // Add or update movie rating
   const rateMutation = useMutation({
     mutationFn: async () => {
+      // Double-check authentication
+      if (!user) {
+        throw new Error("You must be logged in to perform this action");
+      }
+      
       if (isNewMovie && tmdbMovie) {
         // Format the movie data for our API
         const movieData = {
@@ -56,24 +76,70 @@ export default function RateMovieModal({
           watchedAt: new Date(watchDate).toISOString(),
         };
         
-        return apiRequest("POST", "/api/movies", movieData);
+        try {
+          const response = await fetch("/api/movies", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify(movieData),
+            credentials: "include"
+          });
+          
+          if (!response.ok) {
+            if (response.status === 401) {
+              throw new Error("Your session has expired. Please log in again.");
+            }
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to save movie");
+          }
+          
+          return await response.json();
+        } catch (error) {
+          console.error("Error saving movie:", error);
+          throw error;
+        }
       } else if (watchedMovie) {
         // Update existing watched movie
-        return apiRequest(
-          "PATCH", 
-          `/api/movies/watched/${watchedMovie.id}`, 
-          {
-            rating,
-            review: review.trim() ? review : null,
-            watchedAt: new Date(watchDate).toISOString(),
+        try {
+          const response = await fetch(`/api/movies/watched/${watchedMovie.id}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify({
+              rating,
+              review: review.trim() ? review : null,
+              watchedAt: new Date(watchDate).toISOString(),
+            }),
+            credentials: "include"
+          });
+          
+          if (!response.ok) {
+            if (response.status === 401) {
+              throw new Error("Your session has expired. Please log in again.");
+            }
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to update movie");
           }
-        );
+          
+          return await response.json();
+        } catch (error) {
+          console.error("Error updating movie:", error);
+          throw error;
+        }
       }
       
       throw new Error("Invalid movie data");
     },
     onSuccess: () => {
+      // Invalidate multiple related queries to ensure data consistency
       queryClient.invalidateQueries({ queryKey: ["/api/movies/watched"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/movies/favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/stats"] });
+      
       toast({
         title: isNewMovie ? "Movie added to your watched list" : "Rating updated",
         duration: 2000
@@ -81,11 +147,22 @@ export default function RateMovieModal({
       onClose();
     },
     onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      console.error("Rating mutation error:", errorMessage);
+      
       toast({
         title: "Error saving rating",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
+      
+      // If authentication error, suggest to log in again
+      if (errorMessage.includes("session") || errorMessage.includes("logged in")) {
+        setTimeout(() => {
+          // Optionally redirect to login page
+          window.location.href = "/auth";
+        }, 2000);
+      }
     }
   });
   

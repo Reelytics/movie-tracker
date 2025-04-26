@@ -53,16 +53,23 @@ export async function createTestUser() {
 export function setupAuth(app: Express) {
   // Add security headers
   app.use((req, res, next) => {
-    // Enable CORS for development
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
+    // For a single-origin application, we should set the specific origin
+    // instead of '*' to allow credentials to be sent
+    const origin = req.headers.origin || 'https://' + req.headers.host;
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     res.header('Access-Control-Allow-Credentials', 'true');
 
     // Security headers
     res.header('X-Content-Type-Options', 'nosniff');
     res.header('X-XSS-Protection', '1; mode=block');
-    res.header('X-Frame-Options', 'DENY');
+    res.header('X-Frame-Options', 'SAMEORIGIN');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
     
     next();
   });

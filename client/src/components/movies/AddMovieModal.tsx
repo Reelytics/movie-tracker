@@ -12,6 +12,7 @@ import { useMovieApi } from "@/hooks/useMovies";
 import { useQuery } from "@tanstack/react-query";
 import RateMovieModal from "./RateMovieModal";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AddMovieModalProps {
   movie?: TMDBMovie;
@@ -29,6 +30,20 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
   const queryClient = useQueryClient();
   const { searchMovies } = useMovieApi();
   const [, navigate] = useLocation();
+  const { user } = useAuth();
+  
+  // Check authentication when modal opens
+  useEffect(() => {
+    if (isOpen && !user) {
+      toast({
+        title: "Authentication required",
+        description: "You need to be logged in to add movies.",
+        variant: "destructive",
+        duration: 5000
+      });
+      onClose();
+    }
+  }, [isOpen, user, toast, onClose]);
   
   // Debounce search query
   useEffect(() => {
@@ -49,6 +64,11 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
   // Add movie to watched list
   const addToWatchedMutation = useMutation({
     mutationFn: async (tmdbMovie: TMDBMovie) => {
+      // Check authentication first
+      if (!user) {
+        throw new Error("You must be logged in to add movies");
+      }
+      
       // Format the movie data for our API
       const movieData = {
         movie: {
@@ -62,10 +82,36 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
         watchedAt: new Date().toISOString(),
       };
       
-      return apiRequest("POST", "/api/movies", movieData);
+      try {
+        const response = await fetch("/api/movies", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          body: JSON.stringify(movieData),
+          credentials: "include"
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: "Network error" }));
+          if (response.status === 401) {
+            throw new Error("Your session has expired. Please log in again.");
+          }
+          throw new Error(errorData.message || "Failed to add movie");
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error("Error adding movie:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
+      // Invalidate multiple queries to ensure UI is updated
       queryClient.invalidateQueries({ queryKey: ["/api/movies/watched"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/stats"] });
+      
       toast({
         title: "Movie added to your watched list",
         duration: 2000
@@ -73,11 +119,21 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
       onClose();
     },
     onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      console.error("Add movie error:", errorMessage);
+      
       toast({
         title: "Error adding movie",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
+      
+      // If authentication error, suggest to log in again
+      if (errorMessage.includes("session") || errorMessage.includes("logged in")) {
+        setTimeout(() => {
+          window.location.href = "/auth";
+        }, 2000);
+      }
     }
   });
   
