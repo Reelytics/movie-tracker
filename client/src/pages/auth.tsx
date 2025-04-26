@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
   const { user, login, register } = useAuth();
+  const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<string>("login");
 
@@ -99,9 +101,19 @@ export default function AuthPage() {
   });
 
   const handleRegisterSubmit = async (values: RegisterFormValues) => {
+    console.log("Submitting registration form with:", { username: values.username, email: values.email });
     try {
       await register(values);
+      console.log("Registration function completed successfully");
+      
+      // Show success toast
+      toast({
+        title: "Account created",
+        description: `Welcome to Reelytics, ${values.username}!`,
+      });
     } catch (error: any) {
+      console.error("Registration error in form handler:", error);
+      
       // Handle specific error types
       if (error.message.includes("username")) {
         registerForm.setError("username", { 
@@ -120,6 +132,13 @@ export default function AuthPage() {
           message: error.message || "Registration failed"
         });
       }
+      
+      // Show a toast with the error
+      toast({
+        title: "Registration failed",
+        description: error.message || "Could not create your account",
+        variant: "destructive"
+      });
     }
   };
 

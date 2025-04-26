@@ -267,6 +267,9 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
+// Import the hash function from auth
+import { hashPassword } from './auth';
+
 // Create default user if it doesn't exist
 async function initializeDatabase() {
   const storage = new DatabaseStorage();
@@ -274,10 +277,14 @@ async function initializeDatabase() {
     // Check if default user exists
     const existingUser = await storage.getUserByUsername("film_enthusiast");
     if (!existingUser) {
+      // Hash the password for the default user
+      const hashedPassword = await hashPassword("password123");
+      console.log("Created hashed password for default user");
+      
       // Create default user
       await storage.createUser({
         username: "film_enthusiast",
-        passwordHash: "password123", // For demo purposes only
+        passwordHash: hashedPassword, // Properly hashed password
         email: "emma@example.com",
         fullName: "Emma Johnson",
         bio: "Film critic | Noir enthusiast | Collecting memorable cinema moments since 2018",
