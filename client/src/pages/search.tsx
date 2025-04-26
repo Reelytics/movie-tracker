@@ -5,10 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search as SearchIcon, X, Clock } from "lucide-react";
+import { Search as SearchIcon, X, Clock, Film } from "lucide-react";
 import AddMovieModal from "@/components/movies/AddMovieModal";
-import { TMDBMovie } from "@/types";
+import { TMDBMovie, TMDBGenre } from "@/types";
 import { useLocation } from "wouter";
+import { GENRES } from "@/lib/tmdb";
 
 export default function Search() {
   const [query, setQuery] = useState("");
@@ -16,6 +17,11 @@ export default function Search() {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<TMDBMovie | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedGenreId, setSelectedGenreId] = useState<number | null>(null);
+  const [genreName, setGenreName] = useState<string>("");
+  
+  // Get URL parameters to check for genre filter
+  const [location] = useLocation();
   
   // Set document title
   useEffect(() => {
@@ -30,10 +36,45 @@ export default function Search() {
         console.error("Failed to parse recent searches:", e);
       }
     }
-  }, []);
+    
+    // Check if we have a genre parameter in the URL
+    const urlParams = new URLSearchParams(
+      location.includes('?') ? location.split('?')[1] : ''
+    );
+    const genreParam = urlParams.get('genre');
+    
+    if (genreParam) {
+      const genreId = parseInt(genreParam);
+      setSelectedGenreId(genreId);
+      
+      // Determine genre name from ID
+      switch(genreId) {
+        case GENRES.ACTION:
+          setGenreName("Action");
+          break;
+        case GENRES.COMEDY:
+          setGenreName("Comedy");
+          break;
+        case GENRES.SCIENCE_FICTION:
+          setGenreName("Science Fiction");
+          break;
+        case GENRES.HORROR:
+          setGenreName("Horror");
+          break;
+        case GENRES.DRAMA:
+          setGenreName("Drama");
+          break;
+        default:
+          setGenreName("Genre");
+      }
+    }
+  }, [location]);
   
   // Debounce search query
   useEffect(() => {
+    // If genre is selected, don't use search query
+    if (selectedGenreId) return;
+    
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
       
@@ -46,15 +87,26 @@ export default function Search() {
     }, 500);
     
     return () => clearTimeout(timer);
-  }, [query, recentSearches]);
+  }, [query, recentSearches, selectedGenreId]);
   
-  const { searchMovies } = useMovieApi();
+  const { searchMovies, getMoviesByGenre } = useMovieApi();
   
-  const { data: searchResults, isLoading } = useQuery({
+  // Query for text search
+  const { data: searchResults, isLoading: isLoadingSearch } = useQuery({
     queryKey: ["search-movies", debouncedQuery],
     queryFn: () => searchMovies(debouncedQuery),
-    enabled: debouncedQuery.length > 0
+    enabled: debouncedQuery.length > 0 && !selectedGenreId
   });
+  
+  // Query for genre search
+  const { data: genreResults, isLoading: isLoadingGenre } = useQuery({
+    queryKey: ["genre-movies", selectedGenreId],
+    queryFn: () => getMoviesByGenre(selectedGenreId!),
+    enabled: !!selectedGenreId
+  });
+  
+  // Combined loading state
+  const isLoading = isLoadingSearch || isLoadingGenre;
   
   const clearRecentSearches = () => {
     setRecentSearches([]);
@@ -98,7 +150,7 @@ export default function Search() {
       </div>
       
       <div className="flex-1 overflow-y-auto p-4">
-        {debouncedQuery === "" ? (
+        {debouncedQuery === "" && !selectedGenreId ? (
           <>
             {/* Recent Searches */}
             {recentSearches.length > 0 && (
@@ -143,28 +195,63 @@ export default function Search() {
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Browse Categories</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gradient-to-r from-primary to-blue-400 text-white rounded-lg p-4">
+                <div 
+                  className="bg-gradient-to-r from-primary to-blue-400 text-white rounded-lg p-4 cursor-pointer"
+                  onClick={() => navigate(`/search?genre=${GENRES.ACTION}`)}
+                >
                   <h4 className="font-semibold mb-1">Action</h4>
-                  <p className="text-xs text-white text-opacity-80">738 movies</p>
+                  <p className="text-xs text-white text-opacity-80">Explore action movies</p>
                 </div>
-                <div className="bg-gradient-to-r from-pink-500 to-pink-400 text-white rounded-lg p-4">
+                <div 
+                  className="bg-gradient-to-r from-pink-500 to-pink-400 text-white rounded-lg p-4 cursor-pointer"
+                  onClick={() => navigate(`/search?genre=${GENRES.COMEDY}`)}
+                >
                   <h4 className="font-semibold mb-1">Comedy</h4>
-                  <p className="text-xs text-white text-opacity-80">892 movies</p>
+                  <p className="text-xs text-white text-opacity-80">Explore comedy movies</p>
                 </div>
-                <div className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-lg p-4">
-                  <h4 className="font-semibold mb-1">Sci-Fi</h4>
-                  <p className="text-xs text-white text-opacity-80">421 movies</p>
+                <div 
+                  className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-lg p-4 cursor-pointer"
+                  onClick={() => navigate(`/search?genre=${GENRES.SCIENCE_FICTION}`)}
+                >
+                  <h4 className="font-semibold mb-1">Science Fiction</h4>
+                  <p className="text-xs text-white text-opacity-80">Explore sci-fi movies</p>
                 </div>
-                <div className="bg-gradient-to-r from-purple-600 to-purple-400 text-white rounded-lg p-4">
-                  <h4 className="font-semibold mb-1">Drama</h4>
-                  <p className="text-xs text-white text-opacity-80">1,243 movies</p>
+                <div 
+                  className="bg-gradient-to-r from-purple-600 to-purple-400 text-white rounded-lg p-4 cursor-pointer"
+                  onClick={() => navigate(`/search?genre=${GENRES.HORROR}`)}
+                >
+                  <h4 className="font-semibold mb-1">Horror</h4>
+                  <p className="text-xs text-white text-opacity-80">Explore horror movies</p>
                 </div>
               </div>
             </div>
           </>
         ) : (
-          // Search Results
+          // Search Results or Genre Results
           <div>
+            {/* Genre heading for genre search */}
+            {selectedGenreId && (
+              <div className="mb-5 flex items-center justify-between">
+                <div className="flex items-center">
+                  <Film className="mr-2 h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">{genreName} Movies</h2>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => {
+                    setSelectedGenreId(null);
+                    setGenreName("");
+                    navigate("/search");
+                  }}
+                >
+                  <X className="mr-1 h-3 w-3" />
+                  Clear
+                </Button>
+              </div>
+            )}
+            
             {isLoading ? (
               // Loading state
               <div className="space-y-3">
@@ -179,46 +266,84 @@ export default function Search() {
                   </div>
                 ))}
               </div>
-            ) : searchResults && searchResults.length > 0 ? (
-              <div className="space-y-3">
-                {searchResults.map((movie) => (
-                  <Button
-                    key={movie.id}
-                    variant="outline"
-                    className="flex items-center w-full h-auto p-2 border-gray-200 rounded-lg justify-start"
-                    onClick={() => handleSelectMovie(movie)}
-                  >
-                    <div className="w-16 h-24 rounded overflow-hidden">
-                      <img
-                        src={movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : '/placeholder.png'}
-                        alt={movie.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="ml-3 flex-1 text-left">
-                      <h4 className="font-medium">{movie.title}</h4>
-                      <p className="text-sm text-gray-500">
-                        {movie.release_date ? new Date(movie.release_date).getFullYear() : "Unknown year"}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1 line-clamp-1">
-                        {movie.overview || "No description available"}
-                      </p>
-                    </div>
-                  </Button>
-                ))}
-              </div>
             ) : (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <SearchIcon className="text-gray-400 h-6 w-6" />
+              <>
+                {/* Display normal search results */}
+                {!selectedGenreId && searchResults && searchResults.length > 0 && (
+                  <div className="space-y-3">
+                    {searchResults.map((movie) => (
+                      <Button
+                        key={movie.id}
+                        variant="outline"
+                        className="flex items-center w-full h-auto p-2 border-gray-200 rounded-lg justify-start"
+                        onClick={() => handleSelectMovie(movie)}
+                      >
+                        <div className="w-16 h-24 rounded overflow-hidden">
+                          <img
+                            src={movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : '/placeholder.png'}
+                            alt={movie.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="ml-3 flex-1 text-left">
+                          <h4 className="font-medium">{movie.title}</h4>
+                          <p className="text-sm text-gray-500">
+                            {movie.release_date ? new Date(movie.release_date).getFullYear() : "Unknown year"}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1 line-clamp-1">
+                            {movie.overview || "No description available"}
+                          </p>
+                        </div>
+                      </Button>
+                    ))}
                   </div>
-                  <h3 className="text-lg font-semibold mb-1">No movies found</h3>
-                  <p className="text-sm text-gray-500 max-w-xs mx-auto">
-                    Try searching for another title, or check your spelling
-                  </p>
-                </CardContent>
-              </Card>
+                )}
+                
+                {/* Display genre search results */}
+                {selectedGenreId && genreResults && genreResults.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {genreResults.map((movie) => (
+                      <div 
+                        key={movie.id}
+                        className="cursor-pointer rounded-lg overflow-hidden shadow-md"
+                        onClick={() => handleSelectMovie(movie)}
+                      >
+                        <div className="aspect-[2/3] bg-gray-200">
+                          <img
+                            src={movie.poster_path ? `https://image.tmdb.org/t/p/w400${movie.poster_path}` : '/placeholder.png'}
+                            alt={movie.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="p-2">
+                          <h3 className="text-sm font-medium line-clamp-1">{movie.title}</h3>
+                          <p className="text-xs text-gray-500">
+                            {movie.release_date ? new Date(movie.release_date).getFullYear() : ""}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* No results state */}
+                {((selectedGenreId && (!genreResults || genreResults.length === 0)) || 
+                  (!selectedGenreId && (!searchResults || searchResults.length === 0))) && (
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <SearchIcon className="text-gray-400 h-6 w-6" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-1">No movies found</h3>
+                      <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                        {selectedGenreId 
+                          ? `No ${genreName.toLowerCase()} movies found. Try another category.`
+                          : "Try searching for another title, or check your spelling"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
           </div>
         )}
