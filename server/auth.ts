@@ -53,14 +53,13 @@ export async function createTestUser() {
 export function setupAuth(app: Express) {
   // Add security headers
   app.use((req, res, next) => {
-    // For a single-origin application, we should set the specific origin
-    // instead of '*' to allow credentials to be sent
-    const origin = req.headers.origin || 'https://' + req.headers.host;
-    res.header('Access-Control-Allow-Origin', origin);
+    // In development, we'll use a simpler approach that works with the Vite dev server
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     res.header('Access-Control-Allow-Credentials', 'true');
-
+    res.header('Access-Control-Expose-Headers', 'Set-Cookie');
+    
     // Security headers
     res.header('X-Content-Type-Options', 'nosniff');
     res.header('X-XSS-Protection', '1; mode=block');
@@ -77,15 +76,18 @@ export function setupAuth(app: Express) {
   // Configure session
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "movie-diary-secret",
-    resave: false,
-    saveUninitialized: false,
+    resave: true, // Changed to true to ensure session is saved
+    saveUninitialized: true, // Changed to true for new sessions
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Disable secure for development
       sameSite: 'lax',
-      path: '/'
-    }
+      path: '/',
+      domain: undefined // Let browser set domain automatically
+    },
+    name: 'reelytics.sid', // Custom name for the session cookie
+    store: storage.sessionStore // Use our storage session store
   };
 
   app.use(session(sessionSettings));
@@ -161,9 +163,29 @@ export function setupAuth(app: Express) {
       
       req.login(user, (err) => {
         if (err) return next(err);
-        const userResponse: any = { ...user };
-        delete userResponse.passwordHash; // Don't send the password hash to the client
-        res.json(userResponse);
+        
+        // Save the session before responding
+        req.session.save((err) => {
+          if (err) return next(err);
+          
+          console.log("Session saved successfully:", req.sessionID);
+          
+          // Log session details for debugging
+          console.log("Session cookie:", {
+            name: sessionSettings.name,
+            maxAge: sessionSettings.cookie?.maxAge,
+            secure: sessionSettings.cookie?.secure,
+            path: sessionSettings.cookie?.path
+          });
+          
+          const userResponse: any = { ...user };
+          delete userResponse.passwordHash; // Don't send the password hash to the client
+          
+          // Add the session ID to the response for debugging
+          userResponse.sessionId = req.sessionID;
+          
+          res.json(userResponse);
+        });
       });
     })(req, res, next);
   });
@@ -176,8 +198,19 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
+    console.log("GET /api/user - session ID:", req.sessionID);
+    console.log("Session user:", req.user);
+    console.log("Is authenticated:", req.isAuthenticated());
+    
     if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: "Not authenticated" });
+      return res.status(401).json({ 
+        error: "Not authenticated",
+        debug: {
+          hasSession: !!req.session,
+          sessionID: req.sessionID,
+          sessionExpires: req.session?.cookie?.expires
+        }
+      });
     }
     
     const userResponse: any = { ...req.user };

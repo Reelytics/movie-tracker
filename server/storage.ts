@@ -5,6 +5,8 @@ import {
   favorites, type Favorite, type InsertFavorite,
   type UserStats, type WatchedMovieWithDetails
 } from "@shared/schema";
+import session from "express-session";
+import memorystore from "memorystore";
 
 export interface IStorage {
   // User operations
@@ -33,12 +35,25 @@ export interface IStorage {
   
   // Stats
   getUserStats(userId: number): Promise<UserStats>;
+  
+  // Session store for authentication
+  sessionStore: session.Store;
 }
 
 import { db } from './db';
 import { eq, and, inArray, sql } from 'drizzle-orm';
 
 export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+  
+  constructor() {
+    // Create a memory store for sessions
+    const MemoryStore = memorystore(session);
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000, // prune expired entries every 24h
+    });
+    console.log("Memory session store initialized");
+  }
   
   // User operations
   async getUser(id: number): Promise<User | undefined> {
