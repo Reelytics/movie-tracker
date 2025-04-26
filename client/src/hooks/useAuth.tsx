@@ -106,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiRequest("POST", "/api/register", credentials);
       if (!response.ok) {
         const errorData = await response.json();
+        // Get error message and possibly the error type (username_taken, email_taken, etc.)
         throw new Error(errorData.message || "Registration failed");
       }
       return await response.json();

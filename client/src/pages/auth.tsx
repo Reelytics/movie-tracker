@@ -51,7 +51,17 @@ export default function AuthPage() {
   });
 
   const handleLoginSubmit = async (values: LoginFormValues) => {
-    await login(values);
+    try {
+      await login(values);
+    } catch (error: any) {
+      // Handle invalid credentials
+      if (error.message.includes("Invalid username or password")) {
+        loginForm.setError("password", {
+          type: "manual",
+          message: "Invalid username or password. Please try again."
+        });
+      }
+    }
   };
 
   // Registration form
@@ -66,7 +76,22 @@ export default function AuthPage() {
   });
 
   const handleRegisterSubmit = async (values: RegisterFormValues) => {
-    await register(values);
+    try {
+      await register(values);
+    } catch (error: any) {
+      // Handle specific error types
+      if (error.message.includes("username")) {
+        registerForm.setError("username", { 
+          type: "manual", 
+          message: "This username is already taken. Please choose a different one." 
+        });
+      } else if (error.message.includes("email")) {
+        registerForm.setError("email", { 
+          type: "manual", 
+          message: "This email is already registered. Please use a different email or login." 
+        });
+      }
+    }
   };
 
   return (

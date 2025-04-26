@@ -60,9 +60,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   apiRouter.post("/register", async (req, res, next) => {
     try {
+      // Check for existing username
       const existingUser = await storage.getUserByUsername(req.body.username);
       if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
+        return res.status(400).json({ 
+          error: "username_taken", 
+          message: "This username is already taken. Please choose a different username." 
+        });
+      }
+      
+      // Check for existing email
+      const existingEmail = await storage.getUserByEmail(req.body.email);
+      if (existingEmail) {
+        return res.status(400).json({ 
+          error: "email_taken", 
+          message: "This email is already registered. Please use a different email or try logging in." 
+        });
       }
 
       // Use the hashPassword function from auth.ts
