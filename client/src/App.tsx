@@ -11,6 +11,7 @@ import Library from "@/pages/library";
 import AuthPage from "@/pages/auth";
 import MovieDetails from "@/pages/movie-details";
 import EditProfile from "@/pages/edit-profile";
+import GenrePage from "@/pages/genre";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
 import { ThemeProvider } from "next-themes";
@@ -59,6 +60,11 @@ function Router() {
           <Route path="/edit-profile">
             <ProtectedRoute>
               <EditProfile />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/genre">
+            <ProtectedRoute>
+              <GenrePage />
             </ProtectedRoute>
           </Route>
           <Route path="/movie/:id" component={MovieDetails} />
