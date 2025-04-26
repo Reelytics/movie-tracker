@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { User } from "@shared/schema";
-import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 import { UserStats } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { UserCircle } from "lucide-react";
 
 interface ProfileHeaderProps {
   user: {
@@ -20,21 +21,28 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
       <div className="px-4 pt-6 pb-4">
         <div className="flex items-start">
           <div className="mr-5">
-            <div className="w-20 h-20 bg-gradient-to-r from-primary to-pink-500 rounded-full overflow-hidden border-2 border-white shadow">
-              <img 
-                src={user.profilePicture || "https://avatar.vercel.sh/" + user.username} 
-                alt="Profile picture" 
-                className="w-full h-full object-cover" 
-              />
-            </div>
+            <Avatar className="w-20 h-20 border-2 border-white shadow">
+              {user.profilePicture ? (
+                <AvatarImage 
+                  src={user.profilePicture} 
+                  alt={`${user.username}'s profile`} 
+                />
+              ) : (
+                <AvatarFallback className="bg-gradient-to-r from-primary to-pink-500 text-white">
+                  <UserCircle className="h-10 w-10" />
+                </AvatarFallback>
+              )}
+            </Avatar>
           </div>
           <div className="flex-1">
             <h2 className="text-xl font-semibold mb-1">{user.username}</h2>
             <p className="text-gray-600 text-sm mb-3">{user.fullName || ""}</p>
             <p className="text-sm mb-3">{user.bio || "No bio yet"}</p>
-            <Button variant="outline" size="sm" className="bg-gray-200 text-gray-800 border-gray-200 hover:bg-gray-300">
-              Edit Profile
-            </Button>
+            <Link href="/edit-profile">
+              <Button variant="outline" size="sm" className="bg-gray-200 text-gray-800 border-gray-200 hover:bg-gray-300">
+                Edit Profile
+              </Button>
+            </Link>
           </div>
         </div>
         
