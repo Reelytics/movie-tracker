@@ -44,29 +44,8 @@ export default function Search() {
     const genreParam = urlParams.get('genre');
     
     if (genreParam) {
-      const genreId = parseInt(genreParam);
-      setSelectedGenreId(genreId);
-      
-      // Determine genre name from ID
-      switch(genreId) {
-        case GENRES.ACTION:
-          setGenreName("Action");
-          break;
-        case GENRES.COMEDY:
-          setGenreName("Comedy");
-          break;
-        case GENRES.SCIENCE_FICTION:
-          setGenreName("Science Fiction");
-          break;
-        case GENRES.HORROR:
-          setGenreName("Horror");
-          break;
-        case GENRES.DRAMA:
-          setGenreName("Drama");
-          break;
-        default:
-          setGenreName("Genre");
-      }
+      // Redirect to the new genre page
+      navigate(`/genre?id=${genreParam}`);
     }
   }, [location]);
   
@@ -237,7 +216,7 @@ export default function Search() {
                 {/* Action Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/search?genre=${GENRES.ACTION}`)}
+                  onClick={() => navigate(`/genre?id=${GENRES.ACTION}`)}
                 >
                   {randomActionMovie && randomActionMovie.backdrop_path ? (
                     <>
@@ -260,7 +239,7 @@ export default function Search() {
                 {/* Comedy Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/search?genre=${GENRES.COMEDY}`)}
+                  onClick={() => navigate(`/genre?id=${GENRES.COMEDY}`)}
                 >
                   {randomComedyMovie && randomComedyMovie.backdrop_path ? (
                     <>
@@ -283,7 +262,7 @@ export default function Search() {
                 {/* Science Fiction Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/search?genre=${GENRES.SCIENCE_FICTION}`)}
+                  onClick={() => navigate(`/genre?id=${GENRES.SCIENCE_FICTION}`)}
                 >
                   {randomSciFiMovie && randomSciFiMovie.backdrop_path ? (
                     <>
@@ -306,7 +285,7 @@ export default function Search() {
                 {/* Horror Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/search?genre=${GENRES.HORROR}`)}
+                  onClick={() => navigate(`/genre?id=${GENRES.HORROR}`)}
                 >
                   {randomHorrorMovie && randomHorrorMovie.backdrop_path ? (
                     <>
