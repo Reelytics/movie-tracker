@@ -37,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Auth-specific routes
-  apiRouter.post("/auth/login", (req, res, next) => {
+  apiRouter.post("/login", (req, res, next) => {
     passport.authenticate("local", (err: Error, user: any) => {
       if (err) return next(err);
       if (!user) return res.status(401).json({ message: "Invalid username or password" });
@@ -51,14 +51,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })(req, res, next);
   });
 
-  apiRouter.post("/auth/logout", (req, res, next) => {
+  apiRouter.post("/logout", (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
       res.status(200).json({ message: "Logged out successfully" });
     });
   });
   
-  apiRouter.post("/auth/register", async (req, res, next) => {
+  apiRouter.post("/register", async (req, res, next) => {
     try {
       const existingUser = await storage.getUserByUsername(req.body.username);
       if (existingUser) {
@@ -94,6 +94,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User routes
+  apiRouter.get("/user", (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    const userResponse = { ...req.user };
+    delete userResponse.passwordHash; // Don't send the password hash to the client
+    res.json(userResponse);
+  });
+  
   apiRouter.get("/users/current", ensureAuthenticated, async (req, res) => {
     try {
       const userId = req.user?.id as number;
