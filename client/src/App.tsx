@@ -10,6 +10,7 @@ import Search from "@/pages/search";
 import Library from "@/pages/library";
 import AuthPage from "@/pages/auth";
 import MovieDetails from "@/pages/movie-details";
+import EditProfile from "@/pages/edit-profile";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
 import { ThemeProvider } from "next-themes";
@@ -21,7 +22,10 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 function Router() {
   const [location] = useLocation();
-  const showNav = !location.startsWith("/onboarding") && !location.startsWith("/auth") && !location.startsWith("/movie/");
+  const showNav = !location.startsWith("/onboarding") && 
+                !location.startsWith("/auth") && 
+                !location.startsWith("/movie/") && 
+                !location.startsWith("/edit-profile");
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -47,6 +51,11 @@ function Router() {
           <Route path="/library">
             <ProtectedRoute>
               <Library />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/edit-profile">
+            <ProtectedRoute>
+              <EditProfile />
             </ProtectedRoute>
           </Route>
           <Route path="/movie/:id" component={MovieDetails} />

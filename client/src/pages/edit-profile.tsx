@@ -258,7 +258,7 @@ export default function EditProfile() {
               type="button" 
               variant="outline" 
               className="flex-1"
-              onClick={() => navigate("/profile")}
+              onClick={() => setLocation("/profile")}
             >
               Cancel
             </Button>
