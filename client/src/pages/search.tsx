@@ -19,7 +19,7 @@ export default function Search() {
   
   // Set document title
   useEffect(() => {
-    document.title = "Search | MovieDiary";
+    document.title = "Search | Reelytics";
     
     // Load recent searches from localStorage
     const saved = localStorage.getItem("recentSearches");
@@ -61,9 +61,10 @@ export default function Search() {
     localStorage.removeItem("recentSearches");
   };
   
+  const [, navigate] = useLocation();
+
   const handleSelectMovie = (movie: TMDBMovie) => {
-    setSelectedMovie(movie);
-    setShowAddModal(true);
+    navigate(`/movie/${movie.id}`);
   };
   
   const handleRecenSearch = (term: string) => {

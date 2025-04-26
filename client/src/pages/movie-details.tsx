@@ -31,6 +31,7 @@ export default function MovieDetails() {
       try {
         const movieDetails = await getMovieDetails(movieId);
         setMovie(movieDetails);
+        document.title = `${movieDetails.title} | Reelytics`;
         
         const similar = await getSimilarMovies(movieId);
         setSimilarMovies(similar.slice(0, 6)); // Show just 6 similar movies
