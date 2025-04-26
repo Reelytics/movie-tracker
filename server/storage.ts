@@ -365,17 +365,24 @@ export class DatabaseStorage implements IStorage {
         )
       );
     
-    // Count followers
+    // Count followers (people following this user)
     const [followersCount] = await db
       .select({ count: sql`count(*)` })
       .from(followers)
       .where(eq(followers.followedId, userId));
+    
+    // Count following (people this user follows)
+    const [followingCount] = await db
+      .select({ count: sql`count(*)` })
+      .from(followers)
+      .where(eq(followers.followerId, userId));
     
     return {
       watched: Number(watchedCount.count) || 0,
       favorites: Number(favoritesCount.count) || 0,
       reviews: Number(reviewsCount.count) || 0,
       followers: Number(followersCount.count) || 0,
+      following: Number(followingCount.count) || 0,
     };
   }
 }
