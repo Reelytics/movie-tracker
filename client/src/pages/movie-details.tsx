@@ -4,14 +4,15 @@ import { TMDBMovieDetails, TMDBMovie } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Star, Plus, Heart, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Star, Plus, Check, Calendar, Clock, Edit } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import RateMovieModal from "@/components/movies/RateMovieModal";
 import * as tmdbApi from "@/lib/tmdb";
+import { WatchedMovieWithDetails } from "@shared/schema";
 
 export default function MovieDetails() {
   const params = useParams<{ id: string }>();
@@ -22,11 +23,23 @@ export default function MovieDetails() {
   const { user } = useAuth();
   
   const [showRateModal, setShowRateModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   
   // Use direct API calls instead of the hook
   const [isLoading, setIsLoading] = useState(false);
   const [movie, setMovie] = useState<TMDBMovieDetails | null>(null);
   const [similarMovies, setSimilarMovies] = useState<TMDBMovie[]>([]);
+  
+  // Query to get user's watched movies to check if this movie is in the list
+  const { data: watchedMovies } = useQuery<WatchedMovieWithDetails[]>({
+    queryKey: ["/api/movies/watched"],
+    enabled: !!user, // Only run if user is logged in
+  });
+  
+  // Check if movie is already in user's watched list
+  const watchedMovie = watchedMovies?.find(
+    (m) => m.movie.tmdbId === movieId
+  );
   
   useEffect(() => {
     async function loadMovieData() {
@@ -187,13 +200,23 @@ export default function MovieDetails() {
             </div>
             
             <div className="mt-4 flex flex-col gap-2">
-              <Button 
-                className="w-full bg-primary hover:bg-primary/90"
-                onClick={handleAddMovie}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add to Watched
-              </Button>
+              {watchedMovie ? (
+                <Button 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  onClick={() => setShowRateModal(true)}
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  Added to Watched
+                </Button>
+              ) : (
+                <Button 
+                  className="w-full bg-primary hover:bg-primary/90"
+                  onClick={handleAddMovie}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add to Watched
+                </Button>
+              )}
             </div>
           </div>
           
@@ -316,6 +339,7 @@ export default function MovieDetails() {
       {showRateModal && movie && (
         <RateMovieModal
           tmdbMovie={movie}
+          watchedMovie={watchedMovie}
           isOpen={showRateModal}
           onClose={() => setShowRateModal(false)}
         />
