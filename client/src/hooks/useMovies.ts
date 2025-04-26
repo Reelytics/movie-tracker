@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { TMDBMovie, TMDBMovieDetails } from "@/types";
 import * as tmdbApi from "@/lib/tmdb";
 
@@ -7,7 +7,7 @@ export function useMovieApi() {
   const [error, setError] = useState<string | null>(null);
 
   // Search movies by query
-  const searchMovies = async (query: string): Promise<TMDBMovie[]> => {
+  const searchMovies = useCallback(async (query: string): Promise<TMDBMovie[]> => {
     if (!query) return [];
     setIsLoading(true);
     setError(null);
@@ -21,10 +21,10 @@ export function useMovieApi() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Get trending movies
-  const getTrendingMovies = async (): Promise<TMDBMovie[]> => {
+  const getTrendingMovies = useCallback(async (): Promise<TMDBMovie[]> => {
     setIsLoading(true);
     setError(null);
 
@@ -37,10 +37,10 @@ export function useMovieApi() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Get movie details
-  const getMovieDetails = async (movieId: number): Promise<TMDBMovieDetails> => {
+  const getMovieDetails = useCallback(async (movieId: number): Promise<TMDBMovieDetails> => {
     setIsLoading(true);
     setError(null);
 
@@ -53,10 +53,10 @@ export function useMovieApi() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Get similar movies
-  const getSimilarMovies = async (movieId: number): Promise<TMDBMovie[]> => {
+  const getSimilarMovies = useCallback(async (movieId: number): Promise<TMDBMovie[]> => {
     setIsLoading(true);
     setError(null);
 
@@ -69,7 +69,7 @@ export function useMovieApi() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return {
     searchMovies,

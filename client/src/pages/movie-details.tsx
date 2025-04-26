@@ -14,26 +14,33 @@ import { useAuth } from "@/hooks/useAuth";
 import RateMovieModal from "@/components/movies/RateMovieModal";
 
 export default function MovieDetails() {
-  const { id } = useParams<{ id: string }>();
-  const movieId = parseInt(id);
+  const params = useParams<{ id: string }>();
+  const movieId = params && params.id ? parseInt(params.id) : 0;
   const [, navigate] = useLocation();
-  const { getMovieDetails, getSimilarMovies, isLoading, error } = useMovieApi();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   
+  const [showRateModal, setShowRateModal] = useState(false);
+  
+  // Use direct API calls instead of the hook
+  const [isLoading, setIsLoading] = useState(false);
   const [movie, setMovie] = useState<TMDBMovieDetails | null>(null);
   const [similarMovies, setSimilarMovies] = useState<TMDBMovie[]>([]);
-  const [showRateModal, setShowRateModal] = useState(false);
   
   useEffect(() => {
     async function loadMovieData() {
+      if (!movieId) return;
+      
+      setIsLoading(true);
+      
       try {
-        const movieDetails = await getMovieDetails(movieId);
+        // Use the imported functions directly
+        const movieDetails = await tmdbApi.getMovieDetails(movieId);
         setMovie(movieDetails);
         document.title = `${movieDetails.title} | Reelytics`;
         
-        const similar = await getSimilarMovies(movieId);
+        const similar = await tmdbApi.getSimilarMovies(movieId);
         setSimilarMovies(similar.slice(0, 6)); // Show just 6 similar movies
       } catch (err) {
         console.error("Failed to load movie data:", err);
@@ -42,13 +49,13 @@ export default function MovieDetails() {
           description: "Failed to load movie details. Please try again.",
           variant: "destructive"
         });
+      } finally {
+        setIsLoading(false);
       }
     }
     
-    if (movieId) {
-      loadMovieData();
-    }
-  }, [movieId, getMovieDetails, getSimilarMovies, toast]);
+    loadMovieData();
+  }, [movieId, toast]);
   
   // Add movie to watched list
   const addToWatchedMutation = useMutation({

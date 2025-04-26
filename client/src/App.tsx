@@ -49,9 +49,7 @@ function Router() {
               <Library />
             </ProtectedRoute>
           </Route>
-          <Route path="/movie/:id">
-            <MovieDetails />
-          </Route>
+          <Route path="/movie/:id" component={MovieDetails} />
           <Route>
             <NotFound />
           </Route>
