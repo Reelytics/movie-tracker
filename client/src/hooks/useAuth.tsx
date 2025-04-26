@@ -67,12 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: `Welcome back, ${data.username}!`,
       });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Login failed",
-        description: error.message || "Invalid username or password",
-        variant: "destructive",
-      });
+    onError: () => {
+      // Error handling will be done at the form level
     },
   });
 
@@ -118,12 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: `Welcome, ${data.username}!`,
       });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Registration failed",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: () => {
+      // Error handling will be done at the form level
     },
   });
 

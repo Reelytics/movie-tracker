@@ -55,12 +55,15 @@ export default function AuthPage() {
       await login(values);
     } catch (error: any) {
       // Handle invalid credentials
-      if (error.message.includes("Invalid username or password")) {
-        loginForm.setError("password", {
-          type: "manual",
-          message: "Invalid username or password. Please try again."
-        });
-      }
+      loginForm.setError("password", {
+        type: "manual",
+        message: "Invalid credentials"
+      });
+      
+      loginForm.setError("username", {
+        type: "manual",
+        message: " " // Just add a space to trigger the error state without text
+      });
     }
   };
 
@@ -83,12 +86,18 @@ export default function AuthPage() {
       if (error.message.includes("username")) {
         registerForm.setError("username", { 
           type: "manual", 
-          message: "This username is already taken. Please choose a different one." 
+          message: "Username already taken" 
         });
       } else if (error.message.includes("email")) {
         registerForm.setError("email", { 
           type: "manual", 
-          message: "This email is already registered. Please use a different email or login." 
+          message: "Email already registered" 
+        });
+      } else {
+        // Set a general form error
+        registerForm.setError("root", {
+          type: "manual",
+          message: error.message || "Registration failed"
         });
       }
     }
