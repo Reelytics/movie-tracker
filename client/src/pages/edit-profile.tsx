@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import imageCompression from "browser-image-compression";
 import { UserProfile } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -104,18 +105,50 @@ export default function EditProfile() {
     }
   });
   
-  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // For this implementation, we'll use a simplified approach
-      // In a production app, you would upload the file to a server
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataURL = event.target?.result as string;
-        setProfilePictureURL(dataURL);
-        form.setValue("profilePicture", dataURL);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Show loading toast
+        toast({
+          title: "Processing image",
+          description: "Optimizing your image for upload...",
+          duration: 2000,
+        });
+        
+        // Compress the image
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 500,
+          useWebWorker: true
+        };
+        
+        const compressedFile = await imageCompression(file, options);
+        
+        // Convert to data URL
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const dataURL = event.target?.result as string;
+          setProfilePictureURL(dataURL);
+          form.setValue("profilePicture", dataURL);
+          
+          // Show success toast
+          toast({
+            title: "Image processed",
+            description: `Reduced from ${(file.size / 1024 / 1024).toFixed(2)}MB to ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`,
+            duration: 3000,
+          });
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error("Error compressing image:", error);
+        toast({
+          title: "Error",
+          description: "Failed to process image. Please try a smaller image.",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
     }
   };
   
