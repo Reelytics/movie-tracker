@@ -150,6 +150,7 @@ export class DatabaseStorage implements IStorage {
         movie,
         rating: wm.rating || null,
         review: wm.review || null,
+        firstImpressions: wm.firstImpressions || null,
         favorite: favoriteMovieIds.has(wm.movieId),
         watchedAt: wm.watchedAt,
       };
