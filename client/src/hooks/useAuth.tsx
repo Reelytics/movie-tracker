@@ -2,6 +2,7 @@ import { createContext, ReactNode, useContext, useState, useEffect } from "react
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 
 type User = {
   id: number;
@@ -38,6 +39,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   
   // Get current user from localStorage first, then try API if needed
   const [localUser, setLocalUser] = useState<User | null>(() => {
@@ -131,8 +133,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
       
-      // Force redirection
-      window.location.href = '/';
+      // Use wouter for navigation
+      setLocation('/');
       
       toast({
         title: "Logged in",
@@ -163,8 +165,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Update query cache
       queryClient.setQueryData(['/api/user'], null);
       
-      // Force redirection
-      window.location.href = '/auth';
+      // Use wouter for navigation
+      setLocation('/auth');
       
       toast({
         title: "Logged out",
@@ -213,8 +215,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Set user data in cache
       queryClient.setQueryData(['/api/user'], data);
       
-      // Force redirection
-      window.location.href = '/';
+      // Use wouter for navigation
+      setLocation('/');
       
       toast({
         title: "Account created",
