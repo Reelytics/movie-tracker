@@ -31,6 +31,7 @@ export const watchedMovies = pgTable("watched_movies", {
   movieId: integer("movie_id").notNull(),
   rating: doublePrecision("rating"),
   review: text("review"),
+  firstImpressions: text("first_impressions"),
   favorite: boolean("favorite").default(false),
   watchedAt: timestamp("watched_at").notNull().defaultNow(),
 });
@@ -75,6 +76,7 @@ export const insertWatchedMovieSchema = createInsertSchema(watchedMovies).pick({
   movieId: true,
   rating: true,
   review: true,
+  firstImpressions: true,
   favorite: true,
   watchedAt: true,
 });
