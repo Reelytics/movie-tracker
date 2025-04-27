@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import Rating from "@/components/ui/rating";
+// import Rating from "@/components/ui/rating";
 import RateMovieModal from "./RateMovieModal";
 import { useMovieApi } from "@/hooks/useMovies";
 import { useQuery } from "@tanstack/react-query";
@@ -138,8 +138,8 @@ export default function MovieDetailModal({ watchedMovie, isOpen, onClose }: Movi
                     className="flex-1 flex flex-col items-center justify-center py-1" 
                     onClick={() => setShowRateModal(true)}
                   >
-                    <div className="mb-1">
-                      <Rating value={watchedMovie.rating || 0} readOnly />
+                    <div className="mb-1 font-bold text-lg">
+                      {watchedMovie.rating ? watchedMovie.rating.toFixed(1) : "-"}
                     </div>
                     <span className="text-xs">Rate</span>
                   </Button>
@@ -199,8 +199,8 @@ export default function MovieDetailModal({ watchedMovie, isOpen, onClose }: Movi
                     <h4 className="text-base font-semibold mb-2">Your Review</h4>
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <Rating value={watchedMovie.rating || 0} readOnly />
+                        <div className="px-2 py-1 bg-gray-800 text-white rounded font-semibold text-sm">
+                          {watchedMovie.rating ? watchedMovie.rating.toFixed(1) : "-"}/10
                         </div>
                         <span className="text-xs text-gray-500">
                           Watched on {format(new Date(watchedMovie.watchedAt), "MMMM d, yyyy")}

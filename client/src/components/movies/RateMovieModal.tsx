@@ -8,7 +8,7 @@ import { WatchedMovieWithDetails } from "@shared/schema";
 import { TMDBMovie } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import Rating from "@/components/ui/rating";
+import RatingSlider from "@/components/ui/rating-slider";
 import { useAuth } from "@/hooks/useAuth";
 import * as Drawer from "vaul";
 
@@ -244,11 +244,10 @@ export default function RateMovieModal({
             {/* Rating Section */}
             <div className="mb-5">
               <h4 className="text-center font-medium mb-4">Your Rating</h4>
-              <div className="flex justify-center text-3xl mb-4">
-                <Rating 
-                  value={rating} 
+              <div className="mx-4 mb-6">
+                <RatingSlider 
+                  value={rating || 5} 
                   onChange={setRating} 
-                  size="lg" 
                 />
               </div>
               
