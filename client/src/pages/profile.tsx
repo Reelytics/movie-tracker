@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { WatchedMovieWithDetails, UserProfile } from "@shared/schema";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import MovieGrid from "@/components/movies/MovieGrid";
+import UserReviews from "@/components/profile/UserReviews";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -247,9 +248,10 @@ export default function Profile() {
         </TabsContent>
         
         <TabsContent value="reviews" className="mt-0">
-          <div className="flex items-center justify-center h-40 text-gray-500">
-            No reviews written yet
-          </div>
+          <UserReviews 
+            watchedMovies={watchedMovies || []} 
+            isLoading={loadingMovies} 
+          />
         </TabsContent>
       </Tabs>
     </>
