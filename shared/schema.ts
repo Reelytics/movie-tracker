@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -29,7 +29,7 @@ export const watchedMovies = pgTable("watched_movies", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   movieId: integer("movie_id").notNull(),
-  rating: integer("rating"),
+  rating: doublePrecision("rating"),
   review: text("review"),
   favorite: boolean("favorite").default(false),
   watchedAt: timestamp("watched_at").notNull().defaultNow(),
