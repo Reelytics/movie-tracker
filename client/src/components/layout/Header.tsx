@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Search, LogOut, User, LogIn, Film } from "lucide-react";
+import { Bell, Search, LogOut, User, LogIn, Film, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link, useLocation } from "wouter";
@@ -72,6 +72,12 @@ export default function Header() {
                 <Link href="/profile" className="cursor-pointer flex items-center">
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/edit-profile" className="cursor-pointer flex items-center">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Edit Profile</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">

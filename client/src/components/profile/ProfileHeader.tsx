@@ -191,13 +191,7 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
                 <p className="text-sm mb-3">{user.bio || "No bio yet"}</p>
               </div>
               
-              {currentUser && currentUser.id === user.id ? (
-                <Link href="/edit-profile">
-                  <Button variant="outline" size="sm" className="bg-gray-200 text-gray-800 border-gray-200 hover:bg-gray-300">
-                    Edit Profile
-                  </Button>
-                </Link>
-              ) : currentUser && (
+              {!(currentUser && currentUser.id === user.id) && currentUser && (
                 <Button 
                   onClick={handleFollowToggle}
                   disabled={isLoading}
