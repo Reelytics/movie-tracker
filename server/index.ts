@@ -64,6 +64,19 @@ function checkEnvironmentVariables() {
   // Check environment variables before starting the server
   checkEnvironmentVariables();
   
+  // Test database connection
+  try {
+    // Import database connection test function
+    const { testDatabaseConnection } = await import('./db');
+    const dbConnected = await testDatabaseConnection();
+    
+    if (!dbConnected) {
+      console.warn('Database connection test failed. Some features may not work correctly.');
+    }
+  } catch (error) {
+    console.error('Error testing database connection:', error);
+  }
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
