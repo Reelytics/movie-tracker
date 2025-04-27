@@ -84,6 +84,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get user by username
+  apiRouter.get("/users/username/:username", async (req, res) => {
+    try {
+      const { username } = req.params;
+      
+      // Get user by username
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const stats = await storage.getUserStats(user.id);
+      
+      // Return user profile
+      return res.json(userProfileSchema.parse({
+        user: {
+          id: user.id,
+          username: user.username,
+          fullName: user.fullName,
+          bio: user.bio,
+          profilePicture: user.profilePicture,
+        },
+        stats
+      }));
+    } catch (error) {
+      console.error("Error getting user by username:", error);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      return res.status(500).json({ message });
+    }
+  });
+
+  // Original route - get user by ID
   apiRouter.get("/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
