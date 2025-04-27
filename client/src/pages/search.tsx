@@ -263,7 +263,7 @@ export default function Search() {
                 {/* Science Fiction Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/genre?id=${GENRES.SCIENCE_FICTION.toString()}`)}
+                  onClick={() => navigate(`/genres/scifi`)}
                 >
                   {randomSciFiMovie && randomSciFiMovie.backdrop_path ? (
                     <>

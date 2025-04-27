@@ -15,6 +15,7 @@ import GenrePage from "@/pages/genre";
 import ActionGenrePage from "@/pages/action-genre";
 import ComedyGenrePage from "@/pages/comedy-genre";
 import HorrorGenrePage from "@/pages/horror-genre";
+import SciFiGenrePage from "@/pages/scifi-genre";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
 import { ThemeProvider } from "next-themes";
@@ -83,6 +84,11 @@ function Router() {
           <Route path="/genres/horror">
             <ProtectedRoute>
               <HorrorGenrePage />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/genres/scifi">
+            <ProtectedRoute>
+              <SciFiGenrePage />
             </ProtectedRoute>
           </Route>
           <Route path="/movie/:id" component={MovieDetails} />

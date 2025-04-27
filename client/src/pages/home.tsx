@@ -150,7 +150,7 @@ export default function Home() {
           {/* Sci-Fi Category */}
           <div 
             className="relative h-40 rounded-xl overflow-hidden cursor-pointer shadow-md"
-            onClick={() => navigate(`/genre?id=${GENRES.SCIENCE_FICTION.toString()}`)}
+            onClick={() => navigate(`/genres/scifi`)}
           >
             {randomSciFiMovie && randomSciFiMovie.backdrop_path ? (
               <>
