@@ -62,6 +62,13 @@ export function patchedServeStatic(app: express.Express): void {
   
   // SPA fallback - serve index.html for all unmatched routes
   app.use('*', (_req, res) => {
+    // Exclude API routes from the SPA fallback
+    if (_req.originalUrl.startsWith('/api')) {
+      res.status(404).json({ error: 'API endpoint not found' });
+      return;
+    }
+    
+    // For all other routes, serve the SPA index.html
     res.sendFile(path.join(staticPath, 'index.html'));
   });
   

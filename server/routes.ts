@@ -12,6 +12,15 @@ import { setupAuth, createTestUser } from "./auth";
 import passport from "passport";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add a health check endpoint at the root path for deployment
+  app.get('/', (req, res) => {
+    res.status(200).json({
+      status: 'healthy',
+      message: 'Reelytics API is up and running',
+      timestamp: new Date().toISOString()
+    });
+  });
+  
   // Setup authentication
   setupAuth(app);
   
