@@ -41,14 +41,8 @@ export function patchedServeStatic(app: express.Express): void {
   if (!staticPath) {
     log('No static files found. Cannot serve client app.', 'static-serve');
     
-    // Special handling for root path to pass health checks
-    app.get('/', (_req, res) => {
-      res.status(200).json({
-        status: 'healthy',
-        message: 'Reelytics API is up and running',
-        timestamp: new Date().toISOString()
-      });
-    });
+    // We'll let the main route handler take care of health checks
+    // This code is needed only for fallback case when static files are not found
     
     app.use('*', (_req, res) => {
       // Only show error for non-API routes and non-root routes
@@ -117,12 +111,6 @@ export function patchedServeStatic(app: express.Express): void {
     log(`Error setting up static file serving: ${error}`, 'static-serve');
     
     // Fallback to basic routing if static serving fails
-    app.get('/', (_req, res) => {
-      res.status(200).json({
-        status: 'healthy',
-        message: 'Reelytics API is up and running',
-        timestamp: new Date().toISOString()
-      });
-    });
+    // Main routing in routes.ts will handle the health check endpoint
   }
 }

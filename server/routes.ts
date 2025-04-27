@@ -14,13 +14,23 @@ import passport from "passport";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add a health check endpoint at the root path for deployment
   // This is critical for Replit deployments - always return 200 status
-  app.get('/', (req, res) => {
-    // Always return 200 status for deployment health checks
-    res.status(200).json({
-      status: 'healthy',
-      message: 'Reelytics API is running',
-      timestamp: new Date().toISOString()
-    });
+  app.get('/', (req, res, next) => {
+    // Check if this is a browser request (has Accept header for HTML)
+    const acceptHeader = req.headers.accept || '';
+    const userAgent = req.headers['user-agent'] || '';
+    
+    // If it's a health check request (no Accept header for HTML) or explicit health check
+    if (req.query.health === 'check' || (!acceptHeader.includes('text/html') && !userAgent.includes('Mozilla'))) {
+      // Return health status for deployment checks
+      return res.status(200).json({
+        status: 'healthy',
+        message: 'Reelytics API is running',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // For browser requests, continue to the next middleware (static file serving)
+    next();
   });
   
   // Add a simple health check that always returns 200 status
