@@ -38,26 +38,52 @@ app.use((req, res, next) => {
 
 // Check environment variables
 function checkEnvironmentVariables() {
-  const requiredVars = ['DATABASE_URL'];
-  const missingVars = requiredVars.filter(varName => !process.env[varName]);
+  // Check for database variables
+  const dbVars = ['DATABASE_URL', 'PGHOST', 'PGDATABASE', 'PGUSER', 'PGPASSWORD', 'PGPORT'];
+  const missingDbVars = dbVars.filter(varName => !process.env[varName]);
   
-  if (missingVars.length > 0) {
-    console.warn(`Warning: Missing required environment variables: ${missingVars.join(', ')}`);
-    console.warn('The application may not function correctly without these variables.');
+  if (missingDbVars.length > 0) {
+    // In production, log a warning but don't fail
+    const message = `Missing database environment variables: ${missingDbVars.join(', ')}`;
+    
+    if (process.env.NODE_ENV === 'production') {
+      console.warn(`Warning: ${message}`);
+      console.warn('The application will attempt to connect to the database with available credentials.');
+    } else {
+      console.warn(`Warning: ${message}`);
+      console.warn('The application may not function correctly without these variables.');
+    }
+  } else {
+    console.info('All database environment variables are set.');
   }
   
   // Check for TMDB API key
   if (!process.env.VITE_TMDB_API_KEY) {
     console.warn('Warning: VITE_TMDB_API_KEY is not set. Movie search and details may not work correctly.');
+  } else {
+    console.info('TMDB API key is set.');
   }
   
   // Check for session secret
   if (!process.env.SESSION_SECRET) {
     console.warn('Warning: SESSION_SECRET is not set. Using default value for development only.');
+    
+    // Set a default SESSION_SECRET for deployment testing
+    if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+      process.env.SESSION_SECRET = 'reelytics-' + Date.now().toString();
+      console.info('Set a temporary SESSION_SECRET for deployment.');
+    }
+  } else {
+    console.info('Session secret is set.');
+  }
+  
+  // Set NODE_ENV if not already set
+  if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = 'development';
   }
   
   // Log the current environment
-  console.info(`Application starting in ${process.env.NODE_ENV || 'development'} mode`);
+  console.info(`Application starting in ${process.env.NODE_ENV} mode`);
 }
 
 (async () => {
