@@ -116,11 +116,11 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
   };
   
   // Navigate to a user's profile
-  const navigateToProfile = (userId: number) => {
+  const navigateToProfile = (userId: number, username: string) => {
     if (currentUser?.id === userId) {
-      navigate("/profile");
+      navigate(`/user/${currentUser.username}`);
     } else {
-      navigate(`/profile/${userId}`);
+      navigate(`/user/${username}`);
     }
     setShowFollowersModal(false);
     setShowFollowingModal(false);
@@ -267,7 +267,7 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
               {followers.map((follower) => (
                 <div key={follower.id} className="flex items-center py-3 px-1">
                   <button
-                    onClick={() => navigateToProfile(follower.id)}
+                    onClick={() => navigateToProfile(follower.id, follower.username)}
                     className="flex items-center flex-1 focus:outline-none"
                   >
                     <Avatar className="h-10 w-10 mr-3">
@@ -324,7 +324,7 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
               {following.map((followed) => (
                 <div key={followed.id} className="flex items-center py-3 px-1">
                   <button
-                    onClick={() => navigateToProfile(followed.id)}
+                    onClick={() => navigateToProfile(followed.id, followed.username)}
                     className="flex items-center flex-1 focus:outline-none"
                   >
                     <Avatar className="h-10 w-10 mr-3">

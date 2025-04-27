@@ -13,38 +13,60 @@ import { useAuth } from "@/hooks/useAuth";
 export default function Profile() {
   const params = useParams();
   const userId = params.id ? parseInt(params.id) : null;
+  const username = params.username;
   const { user: currentUser } = useAuth();
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
   
-  // Determine if we're looking at the current user's profile or another user's profile
-  const isCurrentUser = !userId || (currentUser && userId === currentUser.id);
-  
-  // Fetch profile data - either current user or specified user
-  const { data: profile, isLoading: loadingProfile } = useQuery<UserProfile>({
-    queryKey: isCurrentUser ? ["/api/users/current"] : ["/api/users", userId],
-    queryFn: async ({ queryKey }) => {
-      const url = isCurrentUser 
-        ? "/api/users/current" 
-        : `/api/users/${userId}`;
-        
-      // Add authentication headers from localStorage if available
-      let headers: HeadersInit = {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      };
-      
-      try {
-        const savedUser = localStorage.getItem('reelytics_user');
-        if (savedUser) {
-          const userData = JSON.parse(savedUser);
-          if (userData && userData.id) {
-            headers["X-User-Id"] = userData.id.toString();
-            headers["X-User-Auth"] = "true";
-          }
+  // Add auth headers to any fetch
+  const getAuthHeaders = (): HeadersInit => {
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    };
+    
+    try {
+      const savedUser = localStorage.getItem('reelytics_user');
+      if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        if (userData && userData.id) {
+          headers["X-User-Id"] = userData.id.toString();
+          headers["X-User-Auth"] = "true";
         }
-      } catch (e) {
-        console.error("Error reading from localStorage:", e);
       }
+    } catch (e) {
+      console.error("Error reading from localStorage:", e);
+    }
+    
+    return headers;
+  };
+  
+  // Determine if we're looking at current user's profile or other user
+  // First check if using ID path param
+  const isCurrentUserById = !userId || (currentUser && userId === currentUser.id);
+  // Then check if using username path param - if current user's username matches the param
+  const isCurrentUserByUsername = username && currentUser && currentUser.username === username;
+  // Combine checks
+  const isCurrentUser = isCurrentUserById || isCurrentUserByUsername;
+  
+  // Fetch profile data - either current user or specified user by ID or username
+  const { data: profile, isLoading: loadingProfile } = useQuery<UserProfile>({
+    // If using username, use username query key
+    queryKey: isCurrentUser 
+      ? ["/api/users/current"] 
+      : username 
+        ? ["/api/users/username", username] 
+        : ["/api/users", userId],
+    queryFn: async ({ queryKey }) => {
+      let url;
+      if (isCurrentUser) {
+        url = "/api/users/current";
+      } else if (username) {
+        url = `/api/users/username/${username}`;
+      } else {
+        url = `/api/users/${userId}`;
+      }
+        
+      const headers = getAuthHeaders();
       
       const response = await fetch(url, {
         credentials: "include",
@@ -56,35 +78,22 @@ export default function Profile() {
       }
       
       return response.json();
-    }
+    },
+    enabled: !!(isCurrentUser || userId || username) // Only run if we have some way to identify the user
   });
+
+  // Get the actual user ID from the profile for subsequent queries
+  const profileUserId = profile?.user.id;
 
   // Fetch watched movies - either current user or specified user
   const { data: watchedMovies, isLoading: loadingMovies } = useQuery<WatchedMovieWithDetails[]>({
-    queryKey: isCurrentUser ? ["/api/movies/watched"] : ["/api/users", userId, "movies/watched"],
+    queryKey: isCurrentUser ? ["/api/movies/watched"] : ["/api/users", profileUserId, "movies/watched"],
     queryFn: async ({ queryKey }) => {
       const url = isCurrentUser 
         ? "/api/movies/watched" 
-        : `/api/users/${userId}/movies/watched`;
+        : `/api/users/${profileUserId}/movies/watched`;
         
-      // Add authentication headers from localStorage if available
-      let headers: HeadersInit = {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      };
-      
-      try {
-        const savedUser = localStorage.getItem('reelytics_user');
-        if (savedUser) {
-          const userData = JSON.parse(savedUser);
-          if (userData && userData.id) {
-            headers["X-User-Id"] = userData.id.toString();
-            headers["X-User-Auth"] = "true";
-          }
-        }
-      } catch (e) {
-        console.error("Error reading from localStorage:", e);
-      }
+      const headers = getAuthHeaders();
       
       const response = await fetch(url, {
         credentials: "include",
@@ -96,35 +105,19 @@ export default function Profile() {
       }
       
       return response.json();
-    }
+    },
+    enabled: !!profileUserId // Only run if we have the user ID from the profile
   });
 
   // Fetch favorite movies - either current user or specified user
   const { data: favoriteMovies, isLoading: loadingFavorites } = useQuery<WatchedMovieWithDetails[]>({
-    queryKey: isCurrentUser ? ["/api/movies/favorites"] : ["/api/users", userId, "movies/favorites"],
+    queryKey: isCurrentUser ? ["/api/movies/favorites"] : ["/api/users", profileUserId, "movies/favorites"],
     queryFn: async ({ queryKey }) => {
       const url = isCurrentUser 
         ? "/api/movies/favorites" 
-        : `/api/users/${userId}/movies/favorites`;
+        : `/api/users/${profileUserId}/movies/favorites`;
         
-      // Add authentication headers from localStorage if available
-      let headers: HeadersInit = {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      };
-      
-      try {
-        const savedUser = localStorage.getItem('reelytics_user');
-        if (savedUser) {
-          const userData = JSON.parse(savedUser);
-          if (userData && userData.id) {
-            headers["X-User-Id"] = userData.id.toString();
-            headers["X-User-Auth"] = "true";
-          }
-        }
-      } catch (e) {
-        console.error("Error reading from localStorage:", e);
-      }
+      const headers = getAuthHeaders();
       
       const response = await fetch(url, {
         credentials: "include",
@@ -136,7 +129,8 @@ export default function Profile() {
       }
       
       return response.json();
-    }
+    },
+    enabled: !!profileUserId // Only run if we have the user ID from the profile
   });
 
   // Set document title

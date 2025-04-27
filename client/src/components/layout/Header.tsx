@@ -69,7 +69,7 @@ export default function Header() {
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/profile" className="cursor-pointer flex items-center">
+                <Link href={user ? `/user/${user.username}` : "/profile"} className="cursor-pointer flex items-center">
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </Link>

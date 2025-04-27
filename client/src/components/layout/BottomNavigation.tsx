@@ -50,10 +50,10 @@ export default function BottomNavigation() {
         </Link>
         
         {user ? (
-          <Link href="/profile">
+          <Link href={`/user/${user.username}`}>
             <button className="flex flex-col items-center justify-center px-1 py-1 text-gray-500">
-              <User className={`h-5 w-5 ${isActive("/profile") ? "text-primary" : ""}`} />
-              <span className={`text-xs mt-1 ${isActive("/profile") ? "text-primary" : ""}`}>Profile</span>
+              <User className={`h-5 w-5 ${isActive(`/user/${user.username}`) || isActive("/profile") ? "text-primary" : ""}`} />
+              <span className={`text-xs mt-1 ${isActive(`/user/${user.username}`) || isActive("/profile") ? "text-primary" : ""}`}>Profile</span>
             </button>
           </Link>
         ) : (
