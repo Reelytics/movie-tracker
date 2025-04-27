@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Calendar, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import RatingSlider from "@/components/ui/rating-slider";
 import { useAuth } from "@/hooks/useAuth";
 import * as Drawer from "vaul";
+import { format } from "date-fns";
 
 interface RateMovieModalProps {
   watchedMovie?: WatchedMovieWithDetails;
@@ -33,6 +34,7 @@ export default function RateMovieModal({
       ? new Date(watchedMovie.watchedAt).toISOString().split("T")[0]
       : new Date().toISOString().split("T")[0]
   );
+  const [isEditingWatchDate, setIsEditingWatchDate] = useState<boolean>(isNewMovie);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -131,14 +133,21 @@ export default function RateMovieModal({
             }
           }
           
+          // Only include watchedAt if we're explicitly editing it
+          const updatePayload: any = {
+            rating,
+            review: review.trim() ? review : null,
+          };
+          
+          // Only include watchedAt if we're editing it (for new movies or explicit edits)
+          if (isNewMovie || isEditingWatchDate) {
+            updatePayload.watchedAt = new Date(watchDate).toISOString();
+          }
+          
           const response = await fetch(`/api/movies/watched/${watchedMovie.id}`, {
             method: "PATCH",
             headers: authHeaders,
-            body: JSON.stringify({
-              rating,
-              review: review.trim() ? review : null,
-              watchedAt: new Date(watchDate).toISOString(),
-            }),
+            body: JSON.stringify(updatePayload),
             credentials: "include"
           });
           
@@ -256,13 +265,48 @@ export default function RateMovieModal({
                 <Label htmlFor="watch-date" className="block text-sm font-medium text-gray-700 mb-1">
                   Watch Date
                 </Label>
-                <Input 
-                  id="watch-date"
-                  type="date" 
-                  className="w-full" 
-                  value={watchDate}
-                  onChange={(e) => setWatchDate(e.target.value)}
-                />
+                
+                {/* For new movies or when editing date, show date picker */}
+                {(isNewMovie || isEditingWatchDate) ? (
+                  <Input 
+                    id="watch-date"
+                    type="date" 
+                    className="w-full" 
+                    value={watchDate}
+                    onChange={(e) => setWatchDate(e.target.value)}
+                  />
+                ) : (
+                  /* For existing movies, show formatted date with edit button */
+                  <div className="flex items-center">
+                    <div className="flex-1 bg-gray-100 p-2 rounded text-gray-700">
+                      {format(new Date(watchDate), "MMMM d, yyyy")}
+                    </div>
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      size="sm" 
+                      className="ml-2 text-primary hover:text-primary-dark"
+                      onClick={() => setIsEditingWatchDate(true)}
+                    >
+                      <Calendar className="h-4 w-4 mr-1" />
+                      Change
+                    </Button>
+                  </div>
+                )}
+                
+                {/* If editing date, show save button */}
+                {(!isNewMovie && isEditingWatchDate) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 text-green-600 border-green-600"
+                    onClick={() => setIsEditingWatchDate(false)}
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Confirm Date
+                  </Button>
+                )}
               </div>
             </div>
             
