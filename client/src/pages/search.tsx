@@ -217,7 +217,7 @@ export default function Search() {
                 {/* Action Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/genre?id=${GENRES.ACTION.toString()}`)}
+                  onClick={() => navigate(`/genres/action`)}
                 >
                   {randomActionMovie && randomActionMovie.backdrop_path ? (
                     <>
@@ -240,7 +240,7 @@ export default function Search() {
                 {/* Comedy Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/genre?id=${GENRES.COMEDY.toString()}`)}
+                  onClick={() => navigate(`/genres/comedy`)}
                 >
                   {randomComedyMovie && randomComedyMovie.backdrop_path ? (
                     <>
@@ -286,7 +286,7 @@ export default function Search() {
                 {/* Horror Category */}
                 <div 
                   className="relative h-28 rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  onClick={() => navigate(`/genre?id=${GENRES.HORROR.toString()}`)}
+                  onClick={() => navigate(`/genres/horror`)}
                 >
                   {randomHorrorMovie && randomHorrorMovie.backdrop_path ? (
                     <>

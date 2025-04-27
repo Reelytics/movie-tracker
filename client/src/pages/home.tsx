@@ -170,7 +170,7 @@ export default function Home() {
           {/* Comedy Category */}
           <div 
             className="relative h-40 rounded-xl overflow-hidden cursor-pointer shadow-md"
-            onClick={() => navigate(`/genre?id=${GENRES.COMEDY.toString()}`)}
+            onClick={() => navigate(`/genres/comedy`)}
           >
             {randomComedyMovie && randomComedyMovie.backdrop_path ? (
               <>
@@ -210,7 +210,7 @@ export default function Home() {
           {/* Horror Category */}
           <div 
             className="relative h-40 rounded-xl overflow-hidden cursor-pointer shadow-md"
-            onClick={() => navigate(`/genre?id=${GENRES.HORROR.toString()}`)}
+            onClick={() => navigate(`/genres/horror`)}
           >
             {randomHorrorMovie && randomHorrorMovie.backdrop_path ? (
               <>
