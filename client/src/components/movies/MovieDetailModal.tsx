@@ -193,6 +193,18 @@ export default function MovieDetailModal({ watchedMovie, isOpen, onClose }: Movi
                   </p>
                 </div>
                 
+                {/* First Impressions */}
+                {watchedMovie.firstImpressions && (
+                  <div className="mb-4">
+                    <h4 className="text-base font-semibold mb-2">First Impressions</h4>
+                    <div className="bg-amber-50 border border-amber-100 p-3 rounded-lg">
+                      <p className="text-sm text-amber-800 italic">
+                        "{watchedMovie.firstImpressions}"
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Your Review */}
                 {watchedMovie.review && (
                   <div className="mb-4">

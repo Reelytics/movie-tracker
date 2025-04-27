@@ -1,5 +1,6 @@
 import { WatchedMovieWithDetails } from "@shared/schema";
 import { useMovieDetailModal } from "@/hooks/useModal";
+import { QuoteIcon } from "lucide-react";
 
 interface MovieItemProps {
   watchedMovie: WatchedMovieWithDetails;
@@ -37,6 +38,13 @@ export default function MovieItem({ watchedMovie }: MovieItemProps) {
           "bg-red-500"
         }`}>
           {watchedMovie.rating.toFixed(1)}
+        </div>
+      )}
+      
+      {/* First Impressions badge */}
+      {watchedMovie.firstImpressions && (
+        <div className="absolute top-1 left-1 w-6 h-6 flex items-center justify-center rounded-full bg-amber-100 border border-amber-200">
+          <QuoteIcon className="h-3.5 w-3.5 text-amber-800" />
         </div>
       )}
     </div>

@@ -144,6 +144,7 @@ export const watchedMovieWithDetailsSchema = z.object({
   }),
   rating: z.number().nullable(),
   review: z.string().nullable(),
+  firstImpressions: z.string().nullable(),
   favorite: z.boolean(),
   watchedAt: z.date(),
 });

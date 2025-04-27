@@ -29,12 +29,14 @@ export default function RateMovieModal({
   const isNewMovie = !watchedMovie && !!tmdbMovie;
   const [rating, setRating] = useState<number>(watchedMovie?.rating || 0);
   const [review, setReview] = useState<string>(watchedMovie?.review || "");
+  const [firstImpressions, setFirstImpressions] = useState<string>(watchedMovie?.firstImpressions || "");
   const [watchDate, setWatchDate] = useState<string>(
     watchedMovie 
       ? new Date(watchedMovie.watchedAt).toISOString().split("T")[0]
       : new Date().toISOString().split("T")[0]
   );
   const [isEditingWatchDate, setIsEditingWatchDate] = useState<boolean>(isNewMovie);
+  const [firstImpressionsError, setFirstImpressionsError] = useState<string>("");
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -74,6 +76,7 @@ export default function RateMovieModal({
           },
           rating,
           review: review.trim() ? review : null,
+          firstImpressions: firstImpressions.trim() ? firstImpressions : null,
           watchedAt: new Date(watchDate).toISOString(),
         };
         
@@ -139,6 +142,11 @@ export default function RateMovieModal({
             review: review.trim() ? review : null,
           };
           
+          // Include firstImpressions if it's being edited
+          if (firstImpressions.trim() !== (watchedMovie.firstImpressions || '')) {
+            updatePayload.firstImpressions = firstImpressions.trim() ? firstImpressions : null;
+          }
+          
           // Only include watchedAt if we're editing it (for new movies or explicit edits)
           if (isNewMovie || isEditingWatchDate) {
             updatePayload.watchedAt = new Date(watchDate).toISOString();
@@ -201,6 +209,13 @@ export default function RateMovieModal({
   });
   
   const handleSubmit = () => {
+    // For new movies, first impressions are mandatory
+    if (isNewMovie && !firstImpressions.trim()) {
+      setFirstImpressionsError("First impressions are required when adding a new movie");
+      return;
+    }
+    
+    setFirstImpressionsError("");
     rateMutation.mutate();
   };
   
@@ -309,6 +324,34 @@ export default function RateMovieModal({
                 )}
               </div>
             </div>
+            
+            {/* First Impressions Section - Only show for new movies or if there's an existing value */}
+            {(isNewMovie || watchedMovie?.firstImpressions) && (
+              <div className="mb-5">
+                <Label htmlFor="first-impressions" className="flex items-center text-sm font-medium text-gray-700 mb-1">
+                  First Impressions
+                  {isNewMovie && <span className="text-red-500 ml-1">*</span>}
+                </Label>
+                <Textarea 
+                  id="first-impressions"
+                  placeholder="A few words will do..." 
+                  className={`w-full h-16 resize-none ${firstImpressionsError ? 'border-red-500 focus:ring-red-500' : ''}`}
+                  value={firstImpressions}
+                  onChange={(e) => {
+                    setFirstImpressions(e.target.value);
+                    if (e.target.value.trim()) {
+                      setFirstImpressionsError('');
+                    }
+                  }}
+                />
+                {firstImpressionsError && (
+                  <p className="text-sm text-red-500 mt-1">{firstImpressionsError}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Share your initial reaction to this movie in a few words.
+                </p>
+              </div>
+            )}
             
             {/* Review Section */}
             <div className="mb-5">
