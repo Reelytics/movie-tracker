@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-// import Rating from "@/components/ui/rating";
+
 import RateMovieModal from "./RateMovieModal";
 import { useMovieApi } from "@/hooks/useMovies";
 import { useQuery } from "@tanstack/react-query";

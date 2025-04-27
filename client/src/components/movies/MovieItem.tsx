@@ -1,6 +1,5 @@
 import { WatchedMovieWithDetails } from "@shared/schema";
 import { useMovieDetailModal } from "@/hooks/useModal";
-import Rating from "@/components/ui/rating";
 
 interface MovieItemProps {
   watchedMovie: WatchedMovieWithDetails;
@@ -32,8 +31,12 @@ export default function MovieItem({ watchedMovie }: MovieItemProps) {
         />
       </div>
       {watchedMovie.rating && (
-        <div className="absolute top-1 right-1 bg-black bg-opacity-70 text-white text-xs px-1.5 py-0.5 rounded-sm">
-          <Rating value={watchedMovie.rating} readOnly size="xs" />
+        <div className={`absolute top-1 right-1 px-2 py-0.5 rounded-sm text-white text-xs font-bold ${
+          watchedMovie.rating >= 7 ? "bg-green-600" : 
+          watchedMovie.rating >= 4 ? "bg-amber-500" : 
+          "bg-red-500"
+        }`}>
+          {watchedMovie.rating.toFixed(1)}
         </div>
       )}
     </div>
