@@ -102,6 +102,7 @@ export function setupAuth(app: Express) {
   });
 
   // Configure session
+  const isProduction = process.env.NODE_ENV === 'production';
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "movie-diary-secret",
     resave: true, // Ensure session is saved
@@ -109,8 +110,10 @@ export function setupAuth(app: Express) {
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      secure: false, // Disable secure for development
-      sameSite: 'lax', // Lax is more reliable for same-origin requests
+      // Secure true only in production with HTTPS
+      secure: isProduction, 
+      // Allow cross-site cookies in production for deployed version
+      sameSite: isProduction ? 'none' : 'lax',
       path: '/',
     },
     name: 'reelytics.sid', // Custom name for the session cookie

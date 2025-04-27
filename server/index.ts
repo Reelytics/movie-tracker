@@ -36,7 +36,34 @@ app.use((req, res, next) => {
   next();
 });
 
+// Check environment variables
+function checkEnvironmentVariables() {
+  const requiredVars = ['DATABASE_URL'];
+  const missingVars = requiredVars.filter(varName => !process.env[varName]);
+  
+  if (missingVars.length > 0) {
+    console.warn(`Warning: Missing required environment variables: ${missingVars.join(', ')}`);
+    console.warn('The application may not function correctly without these variables.');
+  }
+  
+  // Check for TMDB API key
+  if (!process.env.VITE_TMDB_API_KEY) {
+    console.warn('Warning: VITE_TMDB_API_KEY is not set. Movie search and details may not work correctly.');
+  }
+  
+  // Check for session secret
+  if (!process.env.SESSION_SECRET) {
+    console.warn('Warning: SESSION_SECRET is not set. Using default value for development only.');
+  }
+  
+  // Log the current environment
+  console.info(`Application starting in ${process.env.NODE_ENV || 'development'} mode`);
+}
+
 (async () => {
+  // Check environment variables before starting the server
+  checkEnvironmentVariables();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
