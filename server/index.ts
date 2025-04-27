@@ -109,7 +109,16 @@ function checkEnvironmentVariables() {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    try {
+      // Try the original serveStatic first
+      serveStatic(app);
+      log("Using original serveStatic function");
+    } catch (error) {
+      // If it fails, fall back to our patched version
+      log("Original serveStatic failed, using patched version");
+      const { patchedServeStatic } = await import('./static-serve');
+      patchedServeStatic(app);
+    }
   }
 
   // ALWAYS serve the app on port 5000
