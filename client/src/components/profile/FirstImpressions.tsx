@@ -8,8 +8,14 @@ interface FirstImpressionsProps {
 }
 
 export default function FirstImpressions({ watchedMovies, isLoading }: FirstImpressionsProps) {
+  // Debug the watchedMovies data
+  console.log('Watched Movies Data:', watchedMovies);
+  
   // Filter movies that have first impressions
   const moviesWithImpressions = watchedMovies.filter(movie => movie.firstImpressions);
+  
+  // Debug the filtered data
+  console.log('Movies with impressions:', moviesWithImpressions);
 
   if (isLoading) {
     return (
