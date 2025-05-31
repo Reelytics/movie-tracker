@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Calendar, Check } from "lucide-react";
+import { X, Calendar, Check, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import RatingSlider from "@/components/ui/rating-slider";
 import { useAuth } from "@/hooks/useAuth";
+import { useDebugMode } from "@/hooks/useDebugMode";
 import * as Drawer from "vaul";
 import { format } from "date-fns";
 
@@ -38,6 +39,7 @@ export default function RateMovieModal({
   const [isEditingWatchDate, setIsEditingWatchDate] = useState<boolean>(isNewMovie);
   const [firstImpressionsError, setFirstImpressionsError] = useState<string>("");
   
+  const isDebugMode = useDebugMode();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -182,8 +184,12 @@ export default function RateMovieModal({
       queryClient.invalidateQueries({ queryKey: ["/api/movies/favorites"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user/stats"] });
       
+      // Force refetch current tab content
+      queryClient.refetchQueries({ queryKey: ["/api/movies/watched"] });
+      
       toast({
         title: isNewMovie ? "Movie added to your watched list" : "Rating updated",
+        description: firstImpressions.trim() ? "First impressions saved!" : "",
         duration: 2000
       });
       onClose();
@@ -366,6 +372,26 @@ export default function RateMovieModal({
                 onChange={(e) => setReview(e.target.value)}
               />
             </div>
+            
+            {/* Debug Information - Only visible when debug=true is in URL */}
+            {isDebugMode && (
+              <div className="mb-5 border border-amber-200 bg-amber-50 p-3 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <Bug className="h-4 w-4 text-amber-600 mr-2" />
+                  <h4 className="text-sm font-medium text-amber-800">Debug Information</h4>
+                </div>
+                <div className="text-xs font-mono bg-white p-2 rounded border border-amber-100 max-h-48 overflow-y-auto">
+                  <p className="mb-1"><span className="font-semibold">Movie ID:</span> {watchedMovie?.id || 'New Movie'}</p>
+                  <p className="mb-1"><span className="font-semibold">TMDB ID:</span> {watchedMovie?.movie.tmdbId || tmdbMovie?.id || 'N/A'}</p>
+                  <p className="mb-1"><span className="font-semibold">Rating:</span> {rating}</p>
+                  <p className="mb-1"><span className="font-semibold">Watch Date:</span> {watchDate}</p>
+                  <p className="mb-1"><span className="font-semibold">First Impressions:</span> {firstImpressions || 'N/A'}</p>
+                  <p className="mb-1"><span className="font-semibold">Review Length:</span> {review.length} characters</p>
+                  <p className="mb-1"><span className="font-semibold">Is New Movie:</span> {isNewMovie ? 'Yes' : 'No'}</p>
+                  <p className="mb-1"><span className="font-semibold">User ID:</span> {user?.id || 'Not logged in'}</p>
+                </div>
+              </div>
+            )}
             
             {/* Buttons */}
             <div className="flex flex-col space-y-3 mt-6">

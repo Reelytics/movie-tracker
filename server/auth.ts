@@ -105,20 +105,31 @@ export function setupAuth(app: Express) {
   const isProduction = process.env.NODE_ENV === 'production';
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "movie-diary-secret",
-    resave: true, // Ensure session is saved
-    saveUninitialized: true, // Create session for new requests
+    resave: false, // Changed from true to false since we're using a proper store
+    saveUninitialized: false, // Changed from true to false for better session handling
+    rolling: true, // Refresh session with each request
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      // Secure true only in production with HTTPS
-      secure: isProduction, 
-      // Allow cross-site cookies in production for deployed version
-      sameSite: isProduction ? 'none' : 'lax',
+      secure: false, // Set to false for local development
+      sameSite: 'lax',
       path: '/',
     },
-    name: 'reelytics.sid', // Custom name for the session cookie
-    store: storage.sessionStore // Use our storage session store
+    name: 'reelytics.sid',
+    store: storage.sessionStore
   };
+
+  // Add session debugging middleware
+  app.use((req, res, next) => {
+    console.log('Session Debug:', {
+      sessionID: req.sessionID,
+      hasSession: !!req.session,
+      isAuthenticated: req.isAuthenticated?.(),
+      user: req.user?.id,
+      cookie: req.session?.cookie
+    });
+    next();
+  });
 
   app.use(session(sessionSettings));
   app.use(passport.initialize());

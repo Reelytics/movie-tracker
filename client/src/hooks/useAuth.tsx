@@ -32,6 +32,7 @@ type AuthContextType = {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
+  updateUserCache: (userData: Partial<User>) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -249,6 +250,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await registerMutation.mutateAsync(credentials);
   };
 
+  // Update user cache function - synchronizes user data across components
+  const updateUserCache = (userData: Partial<User>) => {
+    if (!user) return;
+    
+    try {
+      // Create updated user object
+      const updatedUser = { ...user, ...userData };
+      
+      // Update localStorage
+      localStorage.setItem('reelytics_user', JSON.stringify(updatedUser));
+      
+      // Update local state
+      setLocalUser(updatedUser);
+      
+      // Update query cache for both API paths
+      queryClient.setQueryData(['/api/user'], updatedUser);
+      
+      // Also update the current user profile cache
+      queryClient.setQueryData(['/api/users/current'], {
+        user: updatedUser,
+        stats: queryClient.getQueryData(['/api/users/current'])?.stats || {}
+      });
+      
+      console.log("User cache updated:", updatedUser);
+    } catch (error) {
+      console.error("Error updating user cache:", error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -258,6 +288,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         register,
+        updateUserCache,
       }}
     >
       {children}

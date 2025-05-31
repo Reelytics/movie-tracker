@@ -50,31 +50,31 @@ export default function Library() {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-semibold mb-4">My Library</h1>
+      <h1 className="text-2xl font-semibold mb-4 dark:text-white">My Library</h1>
       
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="w-full bg-gray-100 p-1 rounded-full mb-4">
+        <TabsList className="w-full bg-gray-100 dark:bg-gray-800 p-1 rounded-full mb-4">
           <TabsTrigger 
             value="all" 
-            className="flex-1 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary rounded-full"
+            className="flex-1 py-1.5 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary rounded-full"
           >
             All
           </TabsTrigger>
           <TabsTrigger 
             value="favorites" 
-            className="flex-1 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary rounded-full"
+            className="flex-1 py-1.5 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary rounded-full"
           >
             Favorites
           </TabsTrigger>
           <TabsTrigger 
             value="recent" 
-            className="flex-1 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary rounded-full"
+            className="flex-1 py-1.5 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary rounded-full"
           >
             Recent
           </TabsTrigger>
           <TabsTrigger 
             value="top-rated" 
-            className="flex-1 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary rounded-full"
+            className="flex-1 py-1.5 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary rounded-full"
           >
             Top Rated
           </TabsTrigger>
@@ -90,7 +90,7 @@ export default function Library() {
           ) : (
             <Card>
               <CardContent className="p-6 text-center">
-                <p className="text-gray-500">You haven't watched any movies yet.</p>
+                <p className="text-gray-500 dark:text-gray-400">You haven't watched any movies yet.</p>
                 <p className="text-gray-500 text-sm mt-2">
                   Add movies to your watched list to see them here.
                 </p>
@@ -109,7 +109,7 @@ export default function Library() {
           ) : (
             <Card>
               <CardContent className="p-6 text-center">
-                <p className="text-gray-500">You haven't added any favorites yet.</p>
+                <p className="text-gray-500 dark:text-gray-400">You haven't added any favorites yet.</p>
                 <p className="text-gray-500 text-sm mt-2">
                   Mark movies as favorites to see them here.
                 </p>
@@ -128,7 +128,7 @@ export default function Library() {
           ) : (
             <Card>
               <CardContent className="p-6 text-center">
-                <p className="text-gray-500">You haven't watched any movies recently.</p>
+                <p className="text-gray-500 dark:text-gray-400">You haven't watched any movies recently.</p>
               </CardContent>
             </Card>
           )}
@@ -144,7 +144,7 @@ export default function Library() {
           ) : (
             <Card>
               <CardContent className="p-6 text-center">
-                <p className="text-gray-500">You haven't rated any movies highly yet.</p>
+                <p className="text-gray-500 dark:text-gray-400">You haven't rated any movies highly yet.</p>
               </CardContent>
             </Card>
           )}

@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { WatchedMovieWithDetails } from "@shared/schema";
-import { X, Bookmark, Heart, Share, ChevronDown } from "lucide-react";
+import { X, Bookmark, Heart, Share, ChevronDown, Trash2, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
+import { movieService } from "@/lib/movieService";
 import { useToast } from "@/hooks/use-toast";
+import { useDebugMode } from "@/hooks/useDebugMode";
 
 import RateMovieModal from "./RateMovieModal";
 import { useMovieApi } from "@/hooks/useMovies";
@@ -24,6 +26,7 @@ export default function MovieDetailModal({ watchedMovie, isOpen, onClose }: Movi
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { getMovieDetails, getSimilarMovies } = useMovieApi();
+  const isDebugMode = useDebugMode();
   
   // Get movie details from TMDB
   const { data: movieDetails } = useQuery({
@@ -44,11 +47,47 @@ export default function MovieDetailModal({ watchedMovie, isOpen, onClose }: Movi
   
   // State to track local favorite status
   const [isFavorite, setIsFavorite] = useState(watchedMovie.favorite);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Update local state when props change
   useEffect(() => {
     setIsFavorite(watchedMovie.favorite);
   }, [watchedMovie.favorite]);
+  
+  // Handle movie deletion
+  const handleDeleteMovie = async () => {
+    if (isDeleting) return; // Prevent multiple clicks
+    
+    try {
+      setIsDeleting(true);
+      
+      await movieService.removeMovie(watchedMovie.id);
+      
+      // Invalidate all relevant queries to ensure fresh data everywhere
+      queryClient.invalidateQueries({ queryKey: ["/api/movies/watched"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/movies/favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users/current"] });
+      
+      toast({
+        title: "Removed",
+        description: `Removed ${watchedMovie.movie.title} from your watched list`,
+        duration: 3000,
+      });
+      
+      // Close the modal
+      onClose();
+    } catch (error) {
+      console.error("Error removing movie:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove the movie. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   
   // Toggle favorite status
   const toggleFavoriteMutation = useMutation({
@@ -146,13 +185,6 @@ export default function MovieDetailModal({ watchedMovie, isOpen, onClose }: Movi
                   <Button 
                     variant="ghost" 
                     className="flex-1 flex flex-col items-center justify-center py-1"
-                  >
-                    <Bookmark className="h-5 w-5 mb-1" />
-                    <span className="text-xs">Watchlist</span>
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="flex-1 flex flex-col items-center justify-center py-1"
                     onClick={() => toggleFavoriteMutation.mutate()}
                     disabled={toggleFavoriteMutation.isPending}
                   >
@@ -167,6 +199,14 @@ export default function MovieDetailModal({ watchedMovie, isOpen, onClose }: Movi
                   >
                     <Share className="h-5 w-5 mb-1" />
                     <span className="text-xs">Share</span>
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="flex-1 flex flex-col items-center justify-center py-1"
+                    onClick={handleDeleteMovie}
+                  >
+                    <Trash2 className="h-5 w-5 mb-1 text-red-500" />
+                    <span className="text-xs">Remove</span>
                   </Button>
                 </div>
                 
@@ -278,6 +318,35 @@ export default function MovieDetailModal({ watchedMovie, isOpen, onClose }: Movi
                           <p className="text-xs font-medium line-clamp-2">{movie.title}</p>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Debug Information - Only visible when debug=true is in URL */}
+                {isDebugMode && (
+                  <div className="mt-4 mb-4 border border-amber-200 bg-amber-50 p-3 rounded-lg">
+                    <div className="flex items-center mb-2">
+                      <Bug className="h-4 w-4 text-amber-600 mr-2" />
+                      <h4 className="text-sm font-medium text-amber-800">Debug Information</h4>
+                    </div>
+                    <div className="text-xs font-mono bg-white p-2 rounded border border-amber-100 max-h-48 overflow-y-auto">
+                      <p className="mb-1"><span className="font-semibold">Movie ID:</span> {watchedMovie.id}</p>
+                      <p className="mb-1"><span className="font-semibold">TMDB ID:</span> {watchedMovie.movie.tmdbId}</p>
+                      <p className="mb-1"><span className="font-semibold">Watched At:</span> {new Date(watchedMovie.watchedAt).toISOString()}</p>
+                      <p className="mb-1"><span className="font-semibold">Rating:</span> {watchedMovie.rating || 'Not rated'}</p>
+                      <p className="mb-1"><span className="font-semibold">Favorite:</span> {watchedMovie.favorite ? 'Yes' : 'No'}</p>
+                      <p className="mb-1"><span className="font-semibold">First Impressions:</span> {watchedMovie.firstImpressions || 'None'}</p>
+                      <p className="mb-1"><span className="font-semibold">Review:</span> {watchedMovie.review || 'None'}</p>
+                      <p className="mb-1"><span className="font-semibold">User ID:</span> {watchedMovie.userId}</p>
+                      {movieDetails && (
+                        <>
+                          <p className="mt-2 mb-1 text-amber-800 font-semibold">TMDB Details:</p>
+                          <p className="mb-1"><span className="font-semibold">Runtime:</span> {movieDetails.runtime} min</p>
+                          <p className="mb-1"><span className="font-semibold">Director:</span> {movieDetails.director}</p>
+                          <p className="mb-1"><span className="font-semibold">Vote Average:</span> {movieDetails.vote_average}</p>
+                          <p className="mb-1"><span className="font-semibold">Popularity:</span> {movieDetails.popularity}</p>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}

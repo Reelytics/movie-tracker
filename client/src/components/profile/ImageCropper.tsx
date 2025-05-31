@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Cropper, { Point, Area } from 'react-easy-crop';
 import { Dialog, DialogContent, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -47,6 +47,15 @@ export default function ImageCropper({
       console.error(e);
     }
   };
+
+  // Reset the cropper state when the image changes
+  useEffect(() => {
+    if (image) {
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedAreaPixels(null);
+    }
+  }, [image]);
 
   return (
     <Dialog open={!!image} onOpenChange={() => onCancel()}>
@@ -137,10 +146,18 @@ async function getCroppedImg(
     safeArea / 2 - image.height * 0.5
   );
 
-  // Extract the cropped image
+  // Calculate the proper positions taking into account the crop position
+  const centerX = safeArea / 2;
+  const centerY = safeArea / 2;
+  
+  // Calculate the actual position using the crop x and y values (which are percentages)
+  const cropX = centerX - (image.width / 2) + (pixelCrop.x);
+  const cropY = centerY - (image.height / 2) + (pixelCrop.y);
+  
+  // Extract the cropped image at the correct position
   const data = ctx.getImageData(
-    safeArea / 2 - pixelCrop.width / 2,
-    safeArea / 2 - pixelCrop.height / 2,
+    cropX,
+    cropY,
     pixelCrop.width,
     pixelCrop.height
   );

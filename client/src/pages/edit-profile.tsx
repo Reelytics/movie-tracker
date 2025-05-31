@@ -38,7 +38,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function EditProfile() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, updateUserCache } = useAuth();
   const queryClient = useQueryClient();
   const [profilePictureURL, setProfilePictureURL] = useState<string | null>(null);
   const [tempImageURL, setTempImageURL] = useState<string | null>(null);
@@ -85,9 +85,18 @@ export default function EditProfile() {
       const response = await apiRequest("PATCH", "/api/users/current", data);
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (response, data) => {
       // Invalidate profile cache to refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/users/current"] });
+      
+      // Update the user cache in the auth context to synchronize header avatar
+      if (updateUserCache) {
+        updateUserCache({
+          fullName: data.fullName,
+          bio: data.bio,
+          profilePicture: data.profilePicture
+        });
+      }
       
       toast({
         title: "Profile updated",
@@ -126,6 +135,9 @@ export default function EditProfile() {
           setShowCropper(true);
         };
         reader.readAsDataURL(file);
+        
+        // Reset the input value so the same file can be selected again
+        e.target.value = '';
       } catch (error) {
         console.error("Error loading image:", error);
         toast({
@@ -145,6 +157,13 @@ export default function EditProfile() {
       form.setValue("profilePicture", croppedImageURL);
       setShowCropper(false);
       setTempImageURL(null);
+      
+      // Update user cache immediately with the new profile picture
+      if (updateUserCache) {
+        updateUserCache({
+          profilePicture: croppedImageURL
+        });
+      }
       
       toast({
         title: "Image cropped",
@@ -170,6 +189,13 @@ export default function EditProfile() {
   const removeProfilePicture = () => {
     setProfilePictureURL(null);
     form.setValue("profilePicture", null);
+    
+    // Update user cache immediately when profile picture is removed
+    if (updateUserCache) {
+      updateUserCache({
+        profilePicture: null
+      });
+    }
   };
   
   const onSubmit = (data: ProfileFormValues) => {

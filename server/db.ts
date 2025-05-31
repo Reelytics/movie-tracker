@@ -1,9 +1,6 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import { Client } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
-
-neonConfig.webSocketConstructor = ws;
 
 // Check for DATABASE_URL environment variable
 if (!process.env.DATABASE_URL) {
@@ -19,23 +16,41 @@ if (!process.env.DATABASE_URL) {
   }
 }
 
-// Create a pool with more robust configuration for production
-export const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
+// Create a client
+export const client = new Client({
+  connectionString: process.env.DATABASE_URL
 });
 
-// Add event listeners for connection issues
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle database client', err);
-  // Don't crash the server, but log the error
-});
+let isConnected = false;
+let connectionPromise: Promise<void> | null = null;
+
+// Function to ensure connection
+async function ensureConnection(): Promise<void> {
+  if (isConnected) {
+    return;
+  }
+  
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+  
+  connectionPromise = (async () => {
+    try {
+      await client.connect();
+      isConnected = true;
+      console.log('Connected to PostgreSQL database');
+    } catch (err) {
+      connectionPromise = null; // Reset on error so we can retry
+      console.error('Error connecting to database:', err);
+      throw err;
+    }
+  })();
+  
+  return connectionPromise;
+}
 
 // Function to test database connection
 export async function testDatabaseConnection(): Promise<boolean> {
-  let client;
   try {
     // In production with no DATABASE_URL, return true for deployment checks
     if (process.env.NODE_ENV === 'production' && 
@@ -44,15 +59,8 @@ export async function testDatabaseConnection(): Promise<boolean> {
       return true;
     }
     
-    // Set a short timeout for deployment health checks
-    client = await Promise.race([
-      pool.connect(),
-      new Promise<null>((_, reject) => 
-        setTimeout(() => reject(new Error('Connection timeout')), 3000)
-      )
-    ]) as any;
-    
-    await client.query('SELECT 1');
+    await ensureConnection();
+    const result = await client.query('SELECT 1');
     console.log('Successfully connected to database');
     return true;
   } catch (err) {
@@ -64,12 +72,17 @@ export async function testDatabaseConnection(): Promise<boolean> {
       console.error('Database connection error:', err);
       return false;
     }
-  } finally {
-    if (client) {
-      client.release();
-    }
   }
 }
 
+// Initialize client on module load, but don't throw on failure
+(async () => {
+  try {
+    await ensureConnection();
+  } catch (err) {
+    console.error('Error initializing database:', err);
+  }
+})();
+
 // Create Drizzle ORM instance
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle(client, { schema });

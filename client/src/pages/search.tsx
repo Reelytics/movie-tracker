@@ -150,8 +150,8 @@ export default function Search() {
   
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center">
-        <div className="flex-1 bg-gray-100 rounded-full px-4 py-2 flex items-center">
+      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex items-center">
+        <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-2 flex items-center">
           <SearchIcon className="text-gray-500 h-4 w-4 mr-2" />
           <Input 
             type="text" 
@@ -175,7 +175,7 @@ export default function Search() {
             {recentSearches.length > 0 && (
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold text-gray-700">Recent Searches</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Recent Searches</h3>
                   <Button 
                     variant="link" 
                     size="sm" 
@@ -212,7 +212,7 @@ export default function Search() {
             
             {/* Popular categories */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Browse Categories</h3>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Browse Categories</h3>
               <div className="grid grid-cols-2 gap-3">
                 {/* Action Category */}
                 <div 
@@ -357,22 +357,22 @@ export default function Search() {
                       <Button
                         key={movie.id}
                         variant="outline"
-                        className="flex items-center w-full h-auto p-2 border-gray-200 rounded-lg justify-start"
+                        className="flex items-center w-full h-auto p-2 border-gray-200 dark:border-gray-700 rounded-lg justify-start"
                         onClick={() => handleSelectMovie(movie)}
                       >
-                        <div className="w-16 h-24 rounded overflow-hidden">
+                        <div className="w-16 h-24 rounded overflow-hidden flex-shrink-0">
                           <img
                             src={movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : '/placeholder.png'}
                             alt={movie.title}
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <div className="ml-3 flex-1 text-left">
-                          <h4 className="font-medium">{movie.title}</h4>
-                          <p className="text-sm text-gray-500">
+                        <div className="ml-3 flex-1 text-left min-w-0">
+                          <h4 className="font-medium dark:text-white truncate">{movie.title}</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             {movie.release_date ? new Date(movie.release_date).getFullYear() : "Unknown year"}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1 line-clamp-1">
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 line-clamp-2 overflow-hidden">
                             {movie.overview || "No description available"}
                           </p>
                         </div>
@@ -390,7 +390,7 @@ export default function Search() {
                         className="cursor-pointer rounded-lg overflow-hidden shadow-md"
                         onClick={() => handleSelectMovie(movie)}
                       >
-                        <div className="aspect-[2/3] bg-gray-200">
+                        <div className="aspect-[2/3] bg-gray-200 dark:bg-gray-700">
                           <img
                             src={movie.poster_path ? `https://image.tmdb.org/t/p/w400${movie.poster_path}` : '/placeholder.png'}
                             alt={movie.title}
@@ -398,8 +398,8 @@ export default function Search() {
                           />
                         </div>
                         <div className="p-2">
-                          <h3 className="text-sm font-medium line-clamp-1">{movie.title}</h3>
-                          <p className="text-xs text-gray-500">
+                          <h3 className="text-sm font-medium line-clamp-1 dark:text-white">{movie.title}</h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {movie.release_date ? new Date(movie.release_date).getFullYear() : ""}
                           </p>
                         </div>
@@ -413,11 +413,11 @@ export default function Search() {
                   (!selectedGenreId && (!searchResults || searchResults.length === 0))) && (
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <SearchIcon className="text-gray-400 h-6 w-6" />
+                      <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <SearchIcon className="text-gray-400 dark:text-gray-500 h-6 w-6" />
                       </div>
-                      <h3 className="text-lg font-semibold mb-1">No movies found</h3>
-                      <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                      <h3 className="text-lg font-semibold mb-1 dark:text-white">No movies found</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
                         {selectedGenreId 
                           ? `No ${genreName.toLowerCase()} movies found. Try another category.`
                           : "Try searching for another title, or check your spelling"}

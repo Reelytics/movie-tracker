@@ -9,7 +9,11 @@ import {
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { setupAuth, createTestUser } from "./auth";
+import { setupOnboardingRoutes } from "./onboarding";
+import { setupGenrePreferencesRoutes } from "./genre-preferences";
 import passport from "passport";
+import ticketRoutes from "./services/vision/ticketRoutes";
+import ticketDebugger from "./services/vision/ticketDebugger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add a health check endpoint at the root path for deployment
@@ -65,6 +69,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup authentication
   setupAuth(app);
+  
+  // Setup onboarding routes
+  setupOnboardingRoutes(app);
+  
+  // Setup genre preferences routes
+  setupGenrePreferencesRoutes(app);
   
   // Create test user for development
   await createTestUser();
@@ -318,6 +328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         movieId: movie.id,
         rating: req.body.rating || null,
         review: req.body.review || null,
+        firstImpressions: req.body.firstImpressions || null,
         favorite: req.body.favorite || false,
         watchedAt: req.body.watchedAt ? new Date(req.body.watchedAt) : new Date(),
       };
@@ -363,6 +374,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Not authorized to update this record" });
       }
       
+      // Debug log for firstImpressions update
+      console.log("Movie update request:", {
+        movieId: id,
+        userId,
+        requestBody: req.body,
+        existingMovie: {
+          id: existingWatchedMovie.id,
+          firstImpressions: existingWatchedMovie.firstImpressions,
+        }
+      });
+      
       // Validate update data
       const updateSchema = insertWatchedMovieSchema.partial();
       const updateData = updateSchema.parse(req.body);
@@ -373,6 +395,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update watched movie
       const updatedWatchedMovie = await storage.updateWatchedMovie(id, updateData);
+      
+      // Log the updated movie
+      console.log("Movie updated:", {
+        movieId: id, 
+        updatedData: updateData,
+        updatedMovie: updatedWatchedMovie
+      });
       
       // Handle favorite status if changed
       if (typeof updateData.favorite !== 'undefined') {
@@ -567,6 +596,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register the API router
   app.use("/api", apiRouter);
+  
+  // Register ticket scanning routes with debugging
+  app.use("/api/tickets", ensureAuthenticated, ticketDebugger, ticketRoutes);
+  
+  // Debug route to help diagnose ticket view issues
+  app.get("/api/debug/tickets/:id", ensureAuthenticated, async (req, res) => {
+    try {
+      console.log(`[${new Date().toISOString()}] DEBUG route accessed for ticket: ${req.params.id}`);
+      
+      const userId = req.user?.id as number;
+      const ticketId = parseInt(req.params.id);
+      
+      if (isNaN(ticketId)) {
+        return res.status(400).json({ 
+          error: 'Invalid ticket ID format',
+          debug: { params: req.params, query: req.query, user: userId }
+        });
+      }
+      
+      // Get the ticket
+      const ticket = await storage.getTicket(ticketId);
+      
+      return res.json({
+        debug: {
+          route: 'debug',
+          userId: userId,
+          ticketId: ticketId,
+          requestUrl: req.url,
+          ticketFound: !!ticket,
+          timestamp: new Date().toISOString()
+        },
+        ticket: ticket || null
+      });
+    } catch (error) {
+      console.error('Debug route error:', error);
+      return res.status(500).json({ 
+        error: 'Debug route error',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
 
   return httpServer;
 }

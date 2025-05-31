@@ -186,9 +186,9 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-xl font-semibold mb-1">{user.username}</h2>
-                <p className="text-gray-600 text-sm mb-3">{user.fullName || ""}</p>
-                <p className="text-sm mb-3">{user.bio || "No bio yet"}</p>
+                <h2 className="text-xl font-semibold mb-1 dark:text-white">{user.username}</h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{user.fullName || ""}</p>
+                <p className="text-sm mb-3 dark:text-gray-300">{user.bio || "No bio yet"}</p>
               </div>
               
               {!(currentUser && currentUser.id === user.id) && currentUser && (
@@ -216,14 +216,14 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
           </div>
         </div>
         
-        <div className="flex justify-between mt-6 pb-2 border-b border-gray-200">
+        <div className="flex justify-between mt-6 pb-2 border-b border-gray-200 dark:border-gray-800">
           <div className="text-center">
             <div className="font-semibold">{stats.watched}</div>
-            <div className="text-xs text-gray-500">Watched</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Watched</div>
           </div>
           <div className="text-center">
             <div className="font-semibold">{stats.favorites}</div>
-            <div className="text-xs text-gray-500">Favorites</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Favorites</div>
           </div>
           <button 
             onClick={fetchFollowing}
@@ -231,7 +231,7 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
             className="text-center focus:outline-none"
           >
             <div className="font-semibold">{stats.following}</div>
-            <div className="text-xs text-gray-500">Following</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Following</div>
           </button>
           <button 
             onClick={fetchFollowers}
@@ -239,7 +239,7 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
             className="text-center focus:outline-none"
           >
             <div className="font-semibold">{stats.followers}</div>
-            <div className="text-xs text-gray-500">Followers</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Followers</div>
           </button>
         </div>
       </div>
@@ -259,7 +259,7 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : followers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               No followers yet
             </div>
           ) : (
@@ -281,7 +281,7 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
                     </Avatar>
                     <div className="text-left">
                       <div className="font-medium">{follower.username}</div>
-                      <div className="text-xs text-gray-500 truncate max-w-[200px]">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
                         {follower.fullName || ''}
                       </div>
                     </div>
@@ -316,7 +316,7 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : following.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               Not following anyone yet
             </div>
           ) : (
@@ -338,7 +338,7 @@ export default function ProfileHeader({ user, stats }: ProfileHeaderProps) {
                     </Avatar>
                     <div className="text-left">
                       <div className="font-medium">{followed.username}</div>
-                      <div className="text-xs text-gray-500 truncate max-w-[200px]">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
                         {followed.fullName || ''}
                       </div>
                     </div>

@@ -13,16 +13,16 @@ export default function UserReviews({ watchedMovies, isLoading }: UserReviewsPro
 
   return (
     <Tabs defaultValue="first-impressions" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-full p-1 mb-4">
+      <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800 rounded-full p-1 mb-4">
         <TabsTrigger 
           value="first-impressions" 
-          className="rounded-full data-[state=active]:bg-white"
+          className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 dark:text-gray-400 dark:data-[state=active]:text-white"
         >
           First Impressions
         </TabsTrigger>
         <TabsTrigger 
           value="full-reviews" 
-          className="rounded-full data-[state=active]:bg-white"
+          className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 dark:text-gray-400 dark:data-[state=active]:text-white"
         >
           Full Reviews
         </TabsTrigger>
@@ -36,18 +36,18 @@ export default function UserReviews({ watchedMovies, isLoading }: UserReviewsPro
         {isLoading ? (
           <div className="space-y-4 p-4">
             {[...Array(2)].map((_, i) => (
-              <div key={i} className="animate-pulse flex space-x-4 bg-gray-50 rounded-lg p-4">
-                <div className="rounded w-16 h-24 bg-gray-300"></div>
+              <div key={i} className="animate-pulse flex space-x-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <div className="rounded w-16 h-24 bg-gray-300 dark:bg-gray-700"></div>
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-300 rounded w-full"></div>
+                  <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full"></div>
                 </div>
               </div>
             ))}
           </div>
         ) : moviesWithReviews.length === 0 ? (
-          <div className="flex items-center justify-center h-40 text-gray-500">
+          <div className="flex items-center justify-center h-40 text-gray-500 dark:text-gray-400">
             No reviews written yet
           </div>
         ) : (
@@ -55,9 +55,9 @@ export default function UserReviews({ watchedMovies, isLoading }: UserReviewsPro
             {moviesWithReviews.map(movie => (
               <div 
                 key={movie.id} 
-                className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden"
+                className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
               >
-                <div className="flex items-center justify-between p-3 bg-gray-100/50 border-b border-gray-200">
+                <div className="flex items-center justify-between p-3 bg-gray-100/50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
                     <img 
                       src={movie.movie.posterPath 
@@ -68,7 +68,7 @@ export default function UserReviews({ watchedMovies, isLoading }: UserReviewsPro
                       className="w-10 h-14 object-cover rounded"
                     />
                     <div className="ml-3">
-                      <h3 className="font-medium text-sm">{movie.movie.title}</h3>
+                      <h3 className="font-medium text-sm dark:text-white">{movie.movie.title}</h3>
                     </div>
                   </div>
                   {movie.rating && (
@@ -82,7 +82,7 @@ export default function UserReviews({ watchedMovies, isLoading }: UserReviewsPro
                   )}
                 </div>
                 <div className="p-4">
-                  <p className="text-sm text-gray-700">{movie.review}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{movie.review}</p>
                 </div>
               </div>
             ))}

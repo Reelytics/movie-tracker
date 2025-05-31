@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Search } from "lucide-react";
+import { X, Search, Camera, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMovieApi } from "@/hooks/useMovies";
 import { useQuery } from "@tanstack/react-query";
 import RateMovieModal from "./RateMovieModal";
+import CameraView from "./CameraView";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import * as Drawer from "vaul";
@@ -24,11 +25,13 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedMovie, setSelectedMovie] = useState<TMDBMovie | null>(initialMovie || null);
   const [showRateModal, setShowRateModal] = useState(false);
+  const [showCameraView, setShowCameraView] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { searchMovies } = useMovieApi();
   const [, navigate] = useLocation();
+  const [, goToPath] = useLocation();
   const { user } = useAuth();
   
   // Check authentication when modal opens
@@ -160,13 +163,32 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
     }
   };
   
+  const handleOpenCamera = () => {
+    // Close the modal
+    onClose();
+    
+    // Navigate to the ticket scanning page
+    goToPath("/tickets");
+  };
+  
+  const handleCameraCapture = (imageSrc: string) => {
+    // In the future, we'll implement OCR or barcode scanning here
+    // For now, just show a toast with success message
+    toast({
+      title: "Ticket Captured",
+      description: "Ticket scanning functionality will be implemented soon!",
+      duration: 3000,
+    });
+    console.log("Captured image:", imageSrc);
+  };
+  
   return (
     <>
       {/* Bottom Sheet Drawer using Vaul */}
       <Drawer.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-xl flex flex-col bg-white">
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-xl flex flex-col bg-white dark:bg-gray-900">
             <div className="px-4 py-4 flex-1">
               {/* Drawer handle */}
               <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-4" />
@@ -174,33 +196,47 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
               {/* Header */}
               <div className="flex items-center justify-between mb-4">
                 <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-                  <X className="h-4 w-4 text-gray-700" />
+                  <X className="h-4 w-4 text-gray-700 dark:text-gray-300" />
                 </Button>
-                <h2 className="text-lg font-semibold">Add to Watched</h2>
+                <h2 className="text-lg font-semibold dark:text-white">Add to Watched</h2>
                 <div className="w-8"></div>
               </div>
               
               {/* Search bar, only show if no initial movie was provided */}
               {!initialMovie && (
-                <div className="mb-4">
-                  <div className="bg-gray-100 rounded-full px-4 py-2 flex items-center">
-                    <Search className="text-gray-500 h-4 w-4 mr-2" />
-                    <Input 
-                      type="text" 
-                      placeholder="Search for a movie..." 
-                      className="bg-transparent border-none shadow-none focus-visible:ring-0 pl-0"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                    />
+                <>
+                  <div className="mb-4">
+                    <div className="bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-2 flex items-center">
+                      <Search className="text-gray-500 h-4 w-4 mr-2" />
+                      <Input 
+                        type="text" 
+                        placeholder="Search for a movie..." 
+                        className="bg-transparent border-none shadow-none focus-visible:ring-0 pl-0"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                      />
+                    </div>
                   </div>
-                </div>
+                  
+                  {/* Scan Ticket Button */}
+                  <div className="mb-4">
+                    <Button 
+                      variant="outline" 
+                      className="w-full py-2 flex items-center justify-center"
+                      onClick={handleOpenCamera}
+                    >
+                      <Ticket className="h-4 w-4 mr-2" />
+                      Scan Ticket
+                    </Button>
+                  </div>
+                </>
               )}
               
               {/* Results */}
               <div className="overflow-y-auto max-h-[60vh]">
                 {/* If we have an initial movie, show it */}
                 {initialMovie && (
-                  <div className="flex items-center border border-gray-200 p-3 rounded-lg mb-2">
+                  <div className="flex items-center border border-gray-200 dark:border-gray-700 p-3 rounded-lg mb-2">
                     <div className="w-14 h-20 rounded overflow-hidden">
                       <img 
                         src={initialMovie.poster_path 
@@ -212,8 +248,8 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
                       />
                     </div>
                     <div className="ml-3 flex-1">
-                      <h4 className="font-medium line-clamp-1">{initialMovie.title}</h4>
-                      <p className="text-sm text-gray-500">
+                      <h4 className="font-medium line-clamp-1 dark:text-white">{initialMovie.title}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {initialMovie.release_date 
                           ? new Date(initialMovie.release_date).getFullYear() 
                           : "Unknown year"}
@@ -247,7 +283,7 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
                     {searchResults.map((movie) => (
                       <div 
                         key={movie.id} 
-                        className="flex items-center border border-gray-200 p-3 rounded-lg cursor-pointer hover:bg-gray-50"
+                        className="flex items-center border border-gray-200 dark:border-gray-700 p-3 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                         onClick={() => navigate(`/movie/${movie.id}`)}
                       >
                         <div className="w-14 h-20 rounded overflow-hidden">
@@ -261,8 +297,8 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
                           />
                         </div>
                         <div className="ml-3 flex-1">
-                          <h4 className="font-medium line-clamp-1">{movie.title}</h4>
-                          <p className="text-sm text-gray-500">
+                          <h4 className="font-medium line-clamp-1 dark:text-white">{movie.title}</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             {movie.release_date 
                               ? new Date(movie.release_date).getFullYear() 
                               : "Unknown year"}
@@ -279,11 +315,11 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
                 {/* Empty state */}
                 {!initialMovie && !isLoading && debouncedQuery && (!searchResults || searchResults.length === 0) && (
                   <div className="flex flex-col items-center justify-center text-center py-8">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
                       <Search className="text-gray-400 h-6 w-6" />
                     </div>
-                    <h3 className="text-base font-semibold mb-1">No movies found</h3>
-                    <p className="text-sm text-gray-500 max-w-xs">
+                    <h3 className="text-base font-semibold mb-1 dark:text-white">No movies found</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
                       Try searching for another title, or check your spelling
                     </p>
                   </div>
@@ -292,7 +328,7 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
               
               {/* Bottom action area */}
               {initialMovie && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <Button 
                     variant="default" 
                     className="w-full py-6" 
@@ -317,6 +353,15 @@ export default function AddMovieModal({ movie: initialMovie, isOpen, onClose }: 
             setShowRateModal(false);
             onClose();
           }}
+        />
+      )}
+      
+      {/* Camera View */}
+      {showCameraView && (
+        <CameraView
+          isOpen={showCameraView}
+          onClose={() => setShowCameraView(false)}
+          onCapture={handleCameraCapture}
         />
       )}
     </>

@@ -4,10 +4,14 @@ import {
   watchedMovies, type WatchedMovie, type InsertWatchedMovie,
   favorites, type Favorite, type InsertFavorite,
   followers, type Follower, type InsertFollower,
-  type UserStats, type WatchedMovieWithDetails
+  type UserStats, type WatchedMovieWithDetails,
+  movieTickets, type MovieTicket
 } from "@shared/schema";
 import session from "express-session";
-import memorystore from "memorystore";
+import pgSession from "connect-pg-simple";
+import { db } from './db';
+import { eq, and, inArray, sql } from 'drizzle-orm';
+import { Pool } from 'pg';
 
 export interface IStorage {
   // User operations
@@ -41,6 +45,9 @@ export interface IStorage {
   unfollowUser(followerId: number, followedId: number): Promise<boolean>;
   isFollowing(followerId: number, followedId: number): Promise<boolean>;
   
+  // Ticket operations
+  getTicket(id: number): Promise<MovieTicket | undefined>;
+  
   // Stats
   getUserStats(userId: number): Promise<UserStats>;
   
@@ -48,19 +55,24 @@ export interface IStorage {
   sessionStore: session.Store;
 }
 
-import { db } from './db';
-import { eq, and, inArray, sql } from 'drizzle-orm';
-
 export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
+  private pool: Pool;
   
   constructor() {
-    // Create a memory store for sessions
-    const MemoryStore = memorystore(session);
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000, // prune expired entries every 24h
+    // Create a new pg pool for sessions
+    this.pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
     });
-    console.log("Memory session store initialized");
+    
+    // Create PostgreSQL session store
+    const PostgresStore = pgSession(session);
+    this.sessionStore = new PostgresStore({
+      pool: this.pool,
+      tableName: 'user_sessions',
+      createTableIfMissing: true,
+    });
+    console.log("PostgreSQL session store initialized");
   }
   
   // User operations
@@ -147,6 +159,7 @@ export class DatabaseStorage implements IStorage {
       
       return {
         id: wm.id,
+        userId: wm.userId,
         movie,
         rating: wm.rating || null,
         review: wm.review || null,
@@ -175,12 +188,21 @@ export class DatabaseStorage implements IStorage {
   }
   
   async updateWatchedMovie(id: number, watchedMovieUpdate: Partial<InsertWatchedMovie>): Promise<WatchedMovie | undefined> {
-    const [updatedWatchedMovie] = await db
-      .update(watchedMovies)
-      .set(watchedMovieUpdate)
-      .where(eq(watchedMovies.id, id))
-      .returning();
-    return updatedWatchedMovie;
+    console.log(`updateWatchedMovie called with id=${id}, update data:`, watchedMovieUpdate);
+    
+    try {
+      const [updatedWatchedMovie] = await db
+        .update(watchedMovies)
+        .set(watchedMovieUpdate)
+        .where(eq(watchedMovies.id, id))
+        .returning();
+        
+      console.log("Updated watched movie result:", updatedWatchedMovie);
+      return updatedWatchedMovie;
+    } catch (error) {
+      console.error("Error updating watched movie:", error);
+      throw error;
+    }
   }
   
   async deleteWatchedMovie(id: number): Promise<boolean> {
@@ -385,6 +407,23 @@ export class DatabaseStorage implements IStorage {
       followers: Number(followersCount.count) || 0,
       following: Number(followingCount.count) || 0,
     };
+  }
+  
+  // Ticket operations
+  async getTicket(id: number): Promise<MovieTicket | undefined> {
+    try {
+      console.log(`[${new Date().toISOString()}] Storage.getTicket(${id}) - Starting query`);
+      const [ticket] = await db
+        .select()
+        .from(movieTickets)
+        .where(eq(movieTickets.id, id));
+      
+      console.log(`[${new Date().toISOString()}] Storage.getTicket(${id}) - Query completed, found: ${!!ticket}`);
+      return ticket;
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] Storage.getTicket(${id}) - Error:`, error);
+      throw error;
+    }
   }
 }
 

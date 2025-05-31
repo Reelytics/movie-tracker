@@ -127,7 +127,7 @@ export default function GenrePage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
         <div className="flex items-center">
           <Button 
             variant="ghost" 
@@ -139,14 +139,14 @@ export default function GenrePage() {
           </Button>
           <div className="flex items-center">
             <Film className="mr-2 h-5 w-5 text-primary" />
-            <h1 className="text-xl font-semibold">{genreName} Movies</h1>
+            <h1 className="text-xl font-semibold dark:text-white">{genreName} Movies</h1>
           </div>
         </div>
         <div className="flex space-x-2">
           <Button 
             variant="ghost" 
             size="icon" 
-            className={`w-8 h-8 rounded-md ${layout === 'grid' ? 'text-gray-600 bg-gray-100' : 'text-gray-400'}`}
+            className={`w-8 h-8 rounded-md ${layout === 'grid' ? 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800' : 'text-gray-400 dark:text-gray-500'}`}
             onClick={() => setLayout('grid')}
           >
             <Grid className="h-4 w-4" />
@@ -154,7 +154,7 @@ export default function GenrePage() {
           <Button 
             variant="ghost" 
             size="icon" 
-            className={`w-8 h-8 rounded-md ${layout === 'list' ? 'text-gray-600 bg-gray-100' : 'text-gray-400'}`}
+            className={`w-8 h-8 rounded-md ${layout === 'list' ? 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800' : 'text-gray-400 dark:text-gray-500'}`}
             onClick={() => setLayout('list')}
           >
             <List className="h-4 w-4" />
@@ -199,7 +199,7 @@ export default function GenrePage() {
                       className="cursor-pointer rounded-lg overflow-hidden shadow-md"
                       onClick={() => handleMovieClick(movie)}
                     >
-                      <div className="aspect-[2/3] bg-gray-200">
+                      <div className="aspect-[2/3] bg-gray-200 dark:bg-gray-700">
                         <img
                           src={movie.poster_path ? `https://image.tmdb.org/t/p/w400${movie.poster_path}` : '/placeholder.png'}
                           alt={movie.title}
@@ -207,8 +207,8 @@ export default function GenrePage() {
                         />
                       </div>
                       <div className="p-2">
-                        <h3 className="text-sm font-medium line-clamp-1">{movie.title}</h3>
-                        <p className="text-xs text-gray-500">
+                        <h3 className="text-sm font-medium line-clamp-1 dark:text-white">{movie.title}</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           {movie.release_date ? new Date(movie.release_date).getFullYear() : ""}
                         </p>
                       </div>
@@ -220,7 +220,7 @@ export default function GenrePage() {
                   {movies.map((movie) => (
                     <div
                       key={movie.id}
-                      className="flex items-start p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
+                      className="flex items-start p-2 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                       onClick={() => handleMovieClick(movie)}
                     >
                       <div className="w-16 h-24 rounded overflow-hidden">
@@ -231,12 +231,12 @@ export default function GenrePage() {
                         />
                       </div>
                       <div className="ml-3 flex-1">
-                        <h3 className="font-medium text-sm">{movie.title}</h3>
-                        <p className="text-xs text-gray-500 mb-1">
+                        <h3 className="font-medium text-sm dark:text-white">{movie.title}</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                           {movie.release_date ? new Date(movie.release_date).getFullYear() : ""}
                         </p>
                         {movie.overview && (
-                          <p className="text-xs text-gray-600 line-clamp-2">{movie.overview}</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">{movie.overview}</p>
                         )}
                       </div>
                     </div>
@@ -245,11 +245,11 @@ export default function GenrePage() {
               )
             ) : (
               <div className="text-center py-10">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Film className="text-gray-400 h-6 w-6" />
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Film className="text-gray-400 dark:text-gray-500 h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-semibold mb-1">No movies found</h3>
-                <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                <h3 className="text-lg font-semibold mb-1 dark:text-white">No movies found</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
                   We couldn't find any movies in this category. Please try a different genre.
                 </p>
               </div>

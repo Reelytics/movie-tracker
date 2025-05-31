@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -11,6 +11,7 @@ export const users = pgTable("users", {
   fullName: text("full_name"),
   bio: text("bio"),
   profilePicture: text("profile_picture"),
+  onboardingCompleted: boolean("onboarding_completed").default(false),
 });
 
 // Movie model
@@ -60,6 +61,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   fullName: true,
   bio: true,
   profilePicture: true,
+  onboardingCompleted: true,
 });
 
 export const insertMovieSchema = createInsertSchema(movies).pick({
@@ -107,6 +109,44 @@ export type Favorite = typeof favorites.$inferSelect;
 export type InsertFollower = z.infer<typeof insertFollowerSchema>;
 export type Follower = typeof followers.$inferSelect;
 
+// Movie Ticket model
+export const movieTickets = pgTable("movie_tickets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  movieId: integer("movie_id"),
+  movieTitle: text("movie_title").notNull(),
+  theaterName: text("theater_name"),
+  showTime: text("show_time"),
+  showDate: text("show_date"),
+  price: text("price"),
+  seatNumber: text("seat_number"),
+  movieRating: text("movie_rating"),
+  theaterRoom: text("theater_room"),
+  ticketNumber: text("ticket_number"),
+  rawOcrText: text("raw_ocr_text"),
+  ticketImagePath: text("ticket_image_path"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertMovieTicketSchema = createInsertSchema(movieTickets).pick({
+  userId: true,
+  movieId: true,
+  movieTitle: true,
+  theaterName: true,
+  showTime: true,
+  showDate: true,
+  price: true,
+  seatNumber: true,
+  movieRating: true,
+  theaterRoom: true,
+  ticketNumber: true,
+  rawOcrText: true,
+  ticketImagePath: true,
+});
+
+export type InsertMovieTicket = z.infer<typeof insertMovieTicketSchema>;
+export type MovieTicket = typeof movieTickets.$inferSelect;
+
 // Extended types for API responses
 export const userStatsSchema = z.object({
   watched: z.number(),
@@ -133,6 +173,7 @@ export type UserProfile = z.infer<typeof userProfileSchema>;
 
 export const watchedMovieWithDetailsSchema = z.object({
   id: z.number(),
+  userId: z.number(),
   movie: z.object({
     id: z.number(),
     tmdbId: z.number(),

@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import Search from "@/pages/search";
 import Library from "@/pages/library";
 import AuthPage from "@/pages/auth";
+import OnboardingPage from "@/pages/onboarding";
 import MovieDetails from "@/pages/movie-details";
 import EditProfile from "@/pages/edit-profile";
 import GenrePage from "@/pages/genre";
@@ -16,11 +17,14 @@ import ActionGenrePage from "@/pages/action-genre";
 import ComedyGenrePage from "@/pages/comedy-genre";
 import HorrorGenrePage from "@/pages/horror-genre";
 import SciFiGenrePage from "@/pages/scifi-genre";
+import TicketListPage from "@/pages/tickets/TicketListPage";
+import ScanReviewPage from "@/pages/tickets/ScanReviewPage";
+import TicketDetailPage from "@/pages/tickets/TicketDetailPage";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
+import AppContainer from "@/components/layout/AppContainer";
 import { ThemeProvider } from "next-themes";
-import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MovieDetailModalProvider } from "@/hooks/useModal";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -38,6 +42,11 @@ function Router() {
       <main className="flex-1 pb-16">
         <Switch>
           <Route path="/auth" component={AuthPage} />
+          <Route path="/onboarding">
+            <ProtectedRoute>
+              <OnboardingPage />
+            </ProtectedRoute>
+          </Route>
           <Route path="/">
             <ProtectedRoute>
               <Home />
@@ -94,6 +103,21 @@ function Router() {
               <SciFiGenrePage />
             </ProtectedRoute>
           </Route>
+          <Route path="/tickets">
+            <ProtectedRoute>
+              <TicketListPage />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/tickets/:id">
+            <ProtectedRoute>
+              <TicketDetailPage />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/scan-review">
+            <ProtectedRoute>
+              <ScanReviewPage />
+            </ProtectedRoute>
+          </Route>
           <Route path="/movie/:id" component={MovieDetails} />
           <Route>
             <NotFound />
@@ -106,36 +130,16 @@ function Router() {
 }
 
 function App() {
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  
-  useEffect(() => {
-    // Check if first time user based on localStorage
-    const isFirstTimeUser = !localStorage.getItem("onboardingComplete");
-    if (isFirstTimeUser) {
-      setShowOnboarding(true);
-    }
-  }, []);
-  
-  const completeOnboarding = () => {
-    localStorage.setItem("onboardingComplete", "true");
-    setShowOnboarding(false);
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light">
+      <ThemeProvider attribute="class" defaultTheme="dark">
         <TooltipProvider>
           <AuthProvider>
             <MovieDetailModalProvider>
               <Toaster />
-              <Router />
-              {showOnboarding && (
-                <OnboardingModal
-                  visible={showOnboarding}
-                  onComplete={completeOnboarding}
-                  onSkip={completeOnboarding}
-                />
-              )}
+              <AppContainer>
+                <Router />
+              </AppContainer>
             </MovieDetailModalProvider>
           </AuthProvider>
         </TooltipProvider>
