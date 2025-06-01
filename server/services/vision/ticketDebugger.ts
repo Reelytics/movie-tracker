@@ -51,7 +51,7 @@ export const ticketDebugger = (req: Request, res: Response, next: NextFunction) 
       }
       
       // Call original end
-      return originalEnd.apply(res, [chunk, ...args]);
+      return originalEnd.call(res, chunk, ...args);
     };
   }
   

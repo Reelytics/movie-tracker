@@ -98,7 +98,8 @@ export class GeminiVisionProvider extends BaseVisionProvider {
       
       return response.status === 200;
     } catch (error) {
-      console.error(`[${this.name}] Test connection failed:`, error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[${this.name}] Test connection failed:`, errorMessage);
       return false;
     }
   }
@@ -170,7 +171,8 @@ Pay special attention to look for key information areas on the ticket, and be ve
     } catch (error) {
       console.error(`[${this.name}] Error parsing response:`, error);
       console.error(`[${this.name}] Raw content:`, content);
-      throw new Error(`Failed to parse API response: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to parse API response: ${errorMessage}`);
     }
   }
 }

@@ -85,7 +85,7 @@ export abstract class BaseVisionProvider implements VisionProvider {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.warn(`[${this.name}] Attempt ${attempt} failed: ${errorMessage}`);
-        lastError = error;
+        lastError = error instanceof Error ? error : new Error(String(error));
         
         if (attempt < this.maxRetries) {
           const delay = Math.min(1000 * 2 ** attempt, 10000); // Exponential backoff, max 10 seconds

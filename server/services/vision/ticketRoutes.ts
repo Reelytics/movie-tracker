@@ -8,6 +8,13 @@ import ticketScannerService from '../vision/ticketScannerService';
 import { eq } from 'drizzle-orm';
 import visionProviderRegistry from '../vision/visionProviderRegistry';
 
+// Extend the session type to include our custom properties
+declare module 'express-session' {
+  interface SessionData {
+    latestScannedTicket?: any;
+  }
+}
+
 // Set up multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -103,7 +110,8 @@ router.post('/scan', upload.single('ticketImage'), async (req: Request, res: Res
     
   } catch (error) {
     console.error('Error in ticket scan route:', error);
-    res.status(500).json({ error: 'Error processing ticket image: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error processing ticket image: ' + errorMessage });
   }
 });
 

@@ -87,7 +87,8 @@ export class OpenAIVisionProvider extends BaseVisionProvider {
       
       return response.status === 200;
     } catch (error) {
-      console.error(`[${this.name}] Test connection failed:`, error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[${this.name}] Test connection failed:`, errorMessage);
       return false;
     }
   }
@@ -176,7 +177,8 @@ Your ENTIRE response must be ONLY the JSON object. Do not include any other text
     } catch (error) {
       console.error(`[${this.name}] Error parsing response:`, error);
       console.error(`[${this.name}] Raw content:`, assistantMessage);
-      throw new Error(`Failed to parse API response: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to parse API response: ${errorMessage}`);
     }
   }
 }
