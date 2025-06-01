@@ -172,7 +172,7 @@ class VisionProviderTest {
     }
     
     // For each image, compare results across providers
-    for (const imageName of allImageNames) {
+    for (const imageName of Array.from(allImageNames)) {
       const imageComparison = {
         imageName,
         providerResults: {} as Record<string, any>,
