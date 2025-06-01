@@ -156,7 +156,7 @@ export default function Profile() {
       
       return response.json();
     },
-    enabled: isCurrentUser // Only fetch tickets for the current user
+    enabled: Boolean(isCurrentUser) // Only fetch tickets for the current user
   });
 
   // Set document title
