@@ -53,16 +53,16 @@ export const ticketDebugger = (req: Request, res: Response, next: NextFunction) 
       // Call original end function with proper argument handling
       if (typeof encoding === 'function') {
         // chunk, callback
-        return originalEnd.call(res, chunk, encoding);
+        return (originalEnd as any).call(res, chunk, encoding);
       } else if (cb) {
         // chunk, encoding, callback
-        return originalEnd.call(res, chunk, encoding, cb);
+        return (originalEnd as any).call(res, chunk, encoding, cb);
       } else if (encoding) {
         // chunk, encoding
-        return originalEnd.call(res, chunk, encoding);
+        return (originalEnd as any).call(res, chunk, encoding);
       } else {
         // just chunk
-        return originalEnd.call(res, chunk);
+        return (originalEnd as any).call(res, chunk);
       }
     };
   }

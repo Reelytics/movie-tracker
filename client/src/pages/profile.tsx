@@ -61,7 +61,7 @@ export default function Profile() {
       ? ["/api/users/current"] 
       : username 
         ? ["/api/users/username", username] 
-        : ["/api/users", userId],
+        : ["/api/users", String(userId || "")],
     queryFn: async ({ queryKey }) => {
       let url;
       if (isCurrentUser) {
