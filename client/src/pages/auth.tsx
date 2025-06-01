@@ -57,7 +57,10 @@ export default function AuthPage() {
   });
   const onLogin = async (values: LoginFormValues) => {
     try {
-      const result = await login(values.username, values.password);
+      const result = await login({
+        username: values.username,
+        password: values.password
+      });
       if (result.success) {
         toast({ title: "Welcome back!", description: "Successfully signed in." });
         setLocation('/');
@@ -71,7 +74,12 @@ export default function AuthPage() {
 
   const onRegister = async (values: RegisterFormValues) => {
     try {
-      const result = await register(values.username, values.username, values.password, values.fullName);
+      const result = await register({
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        fullName: values.fullName
+      });
       if (result.success) {
         toast({ title: "Account created!", description: "Welcome to Reelytics!" });
         setLocation('/');

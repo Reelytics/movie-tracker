@@ -49,11 +49,9 @@ export function setupGenrePreferencesRoutes(app: Express) {
       //   await db.insert(userGenrePreferences).values({ userId, genreId });
       // }
       
-      // For now, we'll update the user record to mark onboarding as progressing
+      // For now, we'll just update the user record to mark onboarding as progressing
       await storage.updateUser(userId, {
-        // Add any field you want to track genre preferences
-        // For now, we'll just add a timestamp to indicate the user has set preferences
-        genrePreferencesUpdatedAt: new Date().toISOString()
+        onboardingCompleted: true
       });
       
       res.json({ success: true });

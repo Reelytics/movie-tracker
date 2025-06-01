@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
-import { MovieTicket } from '../../../shared/schema';
+import { MovieTicket } from '../../../../shared/schema';
 
 interface ScanReviewPageProps {}
 
