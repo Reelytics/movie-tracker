@@ -50,8 +50,14 @@ export const ticketDebugger = (req: Request, res: Response, next: NextFunction) 
         }
       }
       
-      // Call original end
-      return originalEnd.call(res, chunk, ...args);
+      // Call original end with proper typing
+      if (args.length === 0) {
+        return originalEnd.call(res, chunk);
+      } else if (args.length === 1) {
+        return originalEnd.call(res, chunk, args[0]);
+      } else {
+        return originalEnd.call(res, chunk, args[0], args[1]);
+      }
     };
   }
   

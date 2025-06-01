@@ -86,7 +86,7 @@ router.post('/scan', upload.single('ticketImage'), async (req: Request, res: Res
     }
     
     // Validate the extracted data
-    if (!ticketScannerService.validateTicketData(ticketData)) {
+    if (!ticketScannerService.validateTicketData(ticketData as Partial<schema.MovieTicket>)) {
       return res.status(400).json({
         error: 'Could not extract enough information from the ticket',
         partialData: ticketData
@@ -147,7 +147,8 @@ router.post('/save', async (req: Request, res: Response) => {
     
   } catch (error) {
     console.error('Error in ticket save route:', error);
-    res.status(500).json({ error: 'Error saving ticket data: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error saving ticket data: ' + errorMessage });
   }
 });
 
@@ -182,7 +183,8 @@ router.post('/providers/set-active', async (req: Request, res: Response) => {
     
   } catch (error) {
     console.error('Error setting active provider:', error);
-    res.status(500).json({ error: 'Error setting active provider: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error setting active provider: ' + errorMessage });
   }
 });
 
@@ -208,7 +210,8 @@ router.get('/tickets', async (req: Request, res: Response) => {
     
   } catch (error) {
     console.error('Error fetching user tickets:', error);
-    res.status(500).json({ error: 'Error fetching ticket data: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error fetching ticket data: ' + errorMessage });
   }
 });
 
@@ -230,7 +233,8 @@ router.get('/providers', async (req: Request, res: Response) => {
     
   } catch (error) {
     console.error('Error fetching provider status:', error);
-    res.status(500).json({ error: 'Error fetching providers: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error fetching providers: ' + errorMessage });
   }
 });
 
@@ -255,7 +259,8 @@ router.get('/providers/test', async (req: Request, res: Response) => {
     
   } catch (error) {
     console.error('Error testing providers:', error);
-    res.status(500).json({ error: 'Error testing providers: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error testing providers: ' + errorMessage });
   }
 });
 
@@ -285,7 +290,8 @@ router.get('/latest-scan', async (req: Request, res: Response) => {
     
   } catch (error) {
     console.error('Error getting latest scanned ticket:', error);
-    res.status(500).json({ error: 'Error getting latest ticket: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error getting latest ticket: ' + errorMessage });
   }
 });
 

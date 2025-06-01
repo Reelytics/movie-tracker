@@ -105,7 +105,8 @@ class TicketScannerService {
             enhancedData.movieTitle = validatedTitle.title;
           }
         } catch (error) {
-          console.warn('TicketScanner: Could not validate movie title with TMDB:', error.message);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          console.warn('TicketScanner: Could not validate movie title with TMDB:', errorMessage);
           // Keep the original title if validation fails
         }
       }
