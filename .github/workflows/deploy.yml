@@ -32,14 +32,15 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
     - name: Deploy to Railway
-      uses: railwayapp/railway-deploy@v2
-      with:
-        railway_token: ${{ secrets.RAILWAY_TOKEN }}
-        service: ${{ secrets.RAILWAY_SERVICE_ID }}
+      run: railway up --service=${{ secrets.RAILWAY_SERVICE_ID }}
