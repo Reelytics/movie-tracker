@@ -25,13 +25,18 @@ type RegisterCredentials = {
   fullName?: string;
 };
 
+type AuthResult = {
+  success: boolean;
+  error?: string;
+};
+
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   error: Error | null;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<AuthResult>;
   logout: () => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<AuthResult>;
   updateUserCache: (userData: Partial<User>) => void;
 };
 
@@ -236,8 +241,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   // Login function
-  const login = async (credentials: LoginCredentials) => {
-    await loginMutation.mutateAsync(credentials);
+  const login = async (credentials: LoginCredentials): Promise<AuthResult> => {
+    try {
+      await loginMutation.mutateAsync(credentials);
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Login failed" 
+      };
+    }
   };
 
   // Logout function
@@ -246,8 +259,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Register function
-  const register = async (credentials: RegisterCredentials) => {
-    await registerMutation.mutateAsync(credentials);
+  const register = async (credentials: RegisterCredentials): Promise<AuthResult> => {
+    try {
+      await registerMutation.mutateAsync(credentials);
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Registration failed" 
+      };
+    }
   };
 
   // Update user cache function - synchronizes user data across components
