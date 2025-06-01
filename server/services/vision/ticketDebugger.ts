@@ -50,13 +50,19 @@ export const ticketDebugger = (req: Request, res: Response, next: NextFunction) 
         }
       }
       
-      // Call original end with proper typing
-      if (args.length === 0) {
-        return originalEnd.call(res, chunk);
+      // Call original end function with proper argument handling
+      if (typeof args[0] === 'function') {
+        // chunk, callback
+        return originalEnd.call(res, chunk, args[0]);
+      } else if (args.length >= 2) {
+        // chunk, encoding, callback
+        return originalEnd.call(res, chunk, args[0], args[1]);
       } else if (args.length === 1) {
+        // chunk, encoding
         return originalEnd.call(res, chunk, args[0]);
       } else {
-        return originalEnd.call(res, chunk, args[0], args[1]);
+        // just chunk
+        return originalEnd.call(res, chunk);
       }
     };
   }

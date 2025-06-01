@@ -164,7 +164,7 @@ class VisionProviderRegistry {
   async testAllProviders(): Promise<Map<string, boolean>> {
     const results = new Map<string, boolean>();
     
-    for (const [name, provider] of this.providers.entries()) {
+    for (const [name, provider] of Array.from(this.providers.entries())) {
       try {
         const isConnected = await provider.testConnection();
         results.set(name, isConnected);

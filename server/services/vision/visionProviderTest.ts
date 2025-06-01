@@ -70,11 +70,12 @@ class VisionProviderTest {
             });
           } catch (error) {
             console.error(`Error testing ${provider.name} with ${path.basename(imagePath)}:`, error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             providerResults.push({
               imageName: path.basename(imagePath),
               success: false,
               data: null,
-              error: error.message
+              error: errorMessage
             });
           }
         }
@@ -86,9 +87,10 @@ class VisionProviderTest {
         
       } catch (error) {
         console.error(`Error testing provider ${provider.name}:`, error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         results.set(provider.name, {
           connected: false,
-          error: error.message
+          error: errorMessage
         });
       }
     }
@@ -147,7 +149,7 @@ class VisionProviderTest {
     };
     
     // Count connected providers
-    for (const [_, providerData] of results.entries()) {
+    for (const [_, providerData] of Array.from(results.entries())) {
       if (providerData.connected) {
         analysis.connectedCount++;
       }
@@ -161,7 +163,7 @@ class VisionProviderTest {
     // Get all image names from all providers
     const allImageNames = new Set<string>();
     
-    for (const [_, providerData] of results.entries()) {
+    for (const [_, providerData] of Array.from(results.entries())) {
       if (providerData.connected && providerData.results) {
         for (const result of providerData.results) {
           allImageNames.add(result.imageName);
@@ -178,7 +180,7 @@ class VisionProviderTest {
       };
       
       // Extract data for this image from each provider
-      for (const [providerName, providerData] of results.entries()) {
+      for (const [providerName, providerData] of Array.from(results.entries())) {
         if (providerData.connected && providerData.results) {
           const imageResult = providerData.results.find(
             (r: any) => r.imageName === imageName
@@ -214,7 +216,7 @@ class VisionProviderTest {
         let mostCommonValue = null;
         let mostCommonCount = 0;
         
-        for (const [value, count] of values.entries()) {
+        for (const [value, count] of Array.from(values.entries())) {
           if (count > mostCommonCount) {
             mostCommonValue = value;
             mostCommonCount = count;
