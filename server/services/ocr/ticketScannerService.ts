@@ -1,4 +1,4 @@
-import OcrService from './ocrService';
+import ocrService, { OcrService } from './ocrService';
 import movieTitleExtractor from './extractors/movieTitleExtractor';
 import showTimeExtractor from './extractors/showTimeExtractor';
 import showDateExtractor from './extractors/showDateExtractor';
@@ -26,10 +26,10 @@ interface ScanResult {
 
 class TicketScannerService {
   private static instance: TicketScannerService;
-  private ocrService: typeof OcrService;
+  private ocrService: OcrService;
 
   private constructor() {
-    this.ocrService = OcrService;
+    this.ocrService = ocrService;
   }
 
   public static getInstance(): TicketScannerService {
@@ -46,8 +46,8 @@ class TicketScannerService {
     try {
       console.log('TicketScanner: Processing image:', imagePath);
 
-      // Get OCR service instance
-      const ocrInstance = this.ocrService.getInstance();
+      // Get OCR service instance (ocrService is already the singleton instance)
+      const ocrInstance = this.ocrService;
 
       // Preprocess the image
       const processedImagePath = await ocrInstance.preprocessImage(imagePath);

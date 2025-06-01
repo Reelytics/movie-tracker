@@ -263,7 +263,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     
   } catch (error) {
     console.error('Error deleting ticket:', error);
-    res.status(500).json({ error: 'Error deleting ticket: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error deleting ticket: ' + errorMessage });
   }
 });
 

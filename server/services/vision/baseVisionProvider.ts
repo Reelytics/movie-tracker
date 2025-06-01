@@ -30,7 +30,8 @@ export abstract class BaseVisionProvider implements VisionProvider {
       return imageBuffer.toString('base64');
     } catch (error) {
       console.error(`Error reading image file at ${imagePath}:`, error);
-      throw new Error(`Failed to read image file: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to read image file: ${errorMessage}`);
     }
   }
   
@@ -82,7 +83,8 @@ export abstract class BaseVisionProvider implements VisionProvider {
       try {
         return await fn();
       } catch (error) {
-        console.warn(`[${this.name}] Attempt ${attempt} failed: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.warn(`[${this.name}] Attempt ${attempt} failed: ${errorMessage}`);
         lastError = error;
         
         if (attempt < this.maxRetries) {

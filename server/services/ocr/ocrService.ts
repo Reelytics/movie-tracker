@@ -126,4 +126,5 @@ class OcrService {
   }
 }
 
+export { OcrService };
 export default OcrService.getInstance();

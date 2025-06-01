@@ -121,7 +121,8 @@ export class AzureVisionProvider extends BaseVisionProvider {
       
       return response.status === 200;
     } catch (error) {
-      console.error(`[${this.name}] Test connection failed:`, error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[${this.name}] Test connection failed:`, errorMessage);
       return false;
     }
   }
@@ -175,7 +176,8 @@ Respond ONLY with a valid JSON object containing these fields and nothing else. 
       return { ...emptyData, ...ticketData };
     } catch (error) {
       console.error(`[${this.name}] Error parsing response:`, error);
-      throw new Error(`Failed to parse API response: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to parse API response: ${errorMessage}`);
     }
   }
 }
