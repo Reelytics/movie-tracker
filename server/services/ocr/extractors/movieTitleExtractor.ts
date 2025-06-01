@@ -19,7 +19,7 @@ class MovieTitleExtractor extends BaseExtractor {
     return MovieTitleExtractor.instance;
   }
 
-  extract(ocrText: string): string | null {
+  async extract(ocrText: string): Promise<string | null> {
     if (!ocrText || ocrText.trim() === '') {
       console.log('MovieTitleExtractor: Empty OCR text received');
       return null;

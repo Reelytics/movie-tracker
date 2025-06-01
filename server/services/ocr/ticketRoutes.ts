@@ -140,7 +140,8 @@ router.post('/save', async (req: Request, res: Response) => {
     
   } catch (error) {
     console.error('Error in ticket save route:', error);
-    res.status(500).json({ error: 'Error saving ticket data: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error saving ticket data: ' + errorMessage });
   }
 });
 
@@ -166,7 +167,8 @@ router.get('/tickets', async (req: Request, res: Response) => {
     
   } catch (error) {
     console.error('Error fetching user tickets:', error);
-    res.status(500).json({ error: 'Error fetching ticket data: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error fetching ticket data: ' + errorMessage });
   }
 });
 
@@ -205,7 +207,8 @@ router.get('/:id', async (req: Request, res: Response) => {
     
   } catch (error) {
     console.error('Error fetching ticket:', error);
-    res.status(500).json({ error: 'Error fetching ticket: ' + error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: 'Error fetching ticket: ' + errorMessage });
   }
 });
 

@@ -39,7 +39,7 @@ export const GENRES = {
 };
 
 // Helper function to create URL with API key
-const getApiUrl = (endpoint: string, params: Record<string, string | number> = {}): string => {
+const getApiUrl = (endpoint: string, params: Record<string, string | number | boolean> = {}): string => {
   const searchParams = new URLSearchParams();
   searchParams.append('api_key', API_KEY);
   

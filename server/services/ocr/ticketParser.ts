@@ -51,7 +51,7 @@ class TicketParser {
         rawOcrText: ocrText,
         ticketImagePath: imagePath,
         // Extract data using specialized extractors
-        movieTitle: movieTitleExtractor.extract(ocrText) || 'Unknown Movie',
+        movieTitle: (await movieTitleExtractor.extract(ocrText)) || 'Unknown Movie',
         showTime: showTimeExtractor.extract(ocrText),
         showDate: dateExtractor.extract(ocrText),
         price: priceExtractor.extract(ocrText),
