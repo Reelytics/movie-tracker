@@ -7,6 +7,7 @@ export interface TMDBMovie {
   overview: string | null;
   vote_average: number;
   genre_ids: number[];
+  adult: boolean;
 }
 
 export interface TMDBGenre {

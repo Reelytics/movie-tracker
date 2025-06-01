@@ -5,7 +5,7 @@ abstract class BaseExtractor {
   /**
    * Extract information from OCR text
    */
-  abstract extract(ocrText: string): Promise<string | null>;
+  abstract extract(ocrText: string): string | null;
   
   /**
    * Clean extracted text

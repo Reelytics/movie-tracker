@@ -213,8 +213,8 @@ const ScanReviewPage: React.FC<ScanReviewPageProps> = () => {
               </label>
               <input
                 type="text"
-                name="theaterChain"
-                value={editedTicket.theaterChain || ''}
+                name="theaterName"
+                value={editedTicket.theaterName || ''}
                 onChange={handleChange}
                 className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="e.g. AMC, Regal"
@@ -288,10 +288,10 @@ const ScanReviewPage: React.FC<ScanReviewPageProps> = () => {
               <input
                 type="text"
                 name="ticketType"
-                value={editedTicket.ticketType || ''}
+                value={editedTicket.movieRating || ''}
                 onChange={handleChange}
                 className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="e.g. Adult"
+                placeholder="e.g. PG-13"
               />
             </div>
           </div>
