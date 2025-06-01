@@ -21,7 +21,7 @@ export const ticketDebugger = (req: Request, res: Response, next: NextFunction) 
     const chunks: Buffer[] = [];
     
     // Override end function with proper typing
-    res.end = function(chunk?: any, encoding?: BufferEncoding | (() => void), cb?: () => void) {
+    res.end = function(chunk?: any, encoding?: any, cb?: any) {
       if (chunk) {
         chunks.push(Buffer.from(chunk));
       }
@@ -51,7 +51,19 @@ export const ticketDebugger = (req: Request, res: Response, next: NextFunction) 
       }
       
       // Call original end function with proper argument handling
-      return originalEnd.call(res, chunk, encoding, cb);
+      if (typeof encoding === 'function') {
+        // chunk, callback
+        return originalEnd.call(res, chunk, encoding);
+      } else if (cb) {
+        // chunk, encoding, callback
+        return originalEnd.call(res, chunk, encoding, cb);
+      } else if (encoding) {
+        // chunk, encoding
+        return originalEnd.call(res, chunk, encoding);
+      } else {
+        // just chunk
+        return originalEnd.call(res, chunk);
+      }
     };
   }
   
