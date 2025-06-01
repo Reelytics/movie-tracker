@@ -39,6 +39,7 @@ export interface TMDBMovieDetails extends TMDBMovie {
   tagline?: string;
   budget?: number;
   revenue?: number;
+  popularity?: number;
   production_companies?: {
     id: number;
     name: string;

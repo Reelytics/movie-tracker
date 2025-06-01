@@ -67,7 +67,8 @@ class TicketParser {
       return ticketData;
     } catch (error) {
       console.error('Error parsing movie ticket:', error);
-      throw new Error(`Ticket parsing failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown parsing error';
+      throw new Error(`Ticket parsing failed: ${errorMessage}`);
     }
   }
 

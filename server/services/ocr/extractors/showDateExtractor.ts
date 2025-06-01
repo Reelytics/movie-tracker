@@ -14,7 +14,7 @@ class ShowDateExtractor extends BaseExtractor {
     return ShowDateExtractor.instance;
   }
 
-  async extract(ocrText: string): Promise<string | null> {
+  extract(ocrText: string): string | null {
     if (!ocrText) return null;
 
     // Common date formats

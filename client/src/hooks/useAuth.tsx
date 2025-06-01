@@ -289,9 +289,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.setQueryData(['/api/user'], updatedUser);
       
       // Also update the current user profile cache
+      const currentProfile = queryClient.getQueryData(['/api/users/current']) as any;
       queryClient.setQueryData(['/api/users/current'], {
         user: updatedUser,
-        stats: queryClient.getQueryData(['/api/users/current'])?.stats || {}
+        stats: currentProfile?.stats || {}
       });
       
       console.log("User cache updated:", updatedUser);
