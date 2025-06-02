@@ -3,8 +3,25 @@
 # Production database setup script
 echo "Setting up production database..."
 
-# Run database migrations
-npm run db:push
+# Check if DATABASE_URL is set
+if [ -z "$DATABASE_URL" ]; then
+    echo "ERROR: DATABASE_URL environment variable is not set"
+    exit 1
+fi
+
+echo "Database URL configured: ${DATABASE_URL:0:20}..."
+
+# Run database migrations using drizzle-kit
+echo "Running drizzle database migrations..."
+npx drizzle-kit push --config=drizzle.config.ts
+
+# Check if the push was successful
+if [ $? -eq 0 ]; then
+    echo "Database migration completed successfully!"
+else
+    echo "Database migration failed!"
+    exit 1
+fi
 
 # Run any additional migrations
 if [ -f "setup_db.sql" ]; then
