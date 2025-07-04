@@ -1,5 +1,5 @@
 import { profileStats, genreStats, theaterVisits } from "@/lib/mockData";
-import { BarChart3, ChartLineUp } from "lucide-react";
+import { BarChart3, TrendingUp } from "lucide-react";
 import RatingCircle from "@/components/movie/RatingCircle";
 
 export default function Statistics() {

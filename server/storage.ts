@@ -130,7 +130,7 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id, 
-      popcornCount: 0, 
+      popcornCount: insertUser.popcornCount ?? 0, 
       createdAt: now 
     };
     this.users.set(id, user);
@@ -169,7 +169,17 @@ export class MemStorage implements IStorage {
   async createMovie(insertMovie: InsertMovie): Promise<Movie> {
     const id = this.currentMovieID++;
     const now = new Date();
-    const movie: Movie = { ...insertMovie, id, createdAt: now };
+    const movie: Movie = { 
+      ...insertMovie, 
+      id, 
+      createdAt: now,
+      posterUrl: insertMovie.posterUrl ?? null,
+      backdropUrl: insertMovie.backdropUrl ?? null,
+      overview: insertMovie.overview ?? null,
+      runtime: insertMovie.runtime ?? null,
+      rating: insertMovie.rating ?? null,
+      tmdbId: insertMovie.tmdbId ?? null
+    };
     this.movies.set(id, movie);
     return movie;
   }
@@ -184,7 +194,7 @@ export class MemStorage implements IStorage {
   async getRecentMovies(limit: number = 10): Promise<Movie[]> {
     // Sort by creation date
     return Array.from(this.movies.values())
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
       .slice(0, limit);
   }
   
@@ -242,15 +252,17 @@ export class MemStorage implements IStorage {
     const id = this.currentWatchedID++;
     const now = new Date();
     const watched: Watched = { 
-      ...insertWatched, 
+      ...insertWatched,
       id, 
       watchedAt: now,
-      // Set default values for nullable fields if they aren't provided
-      theaterAuditorium: insertWatched.theaterAuditorium || null,
-      ticketCount: insertWatched.ticketCount || null,
-      seats: insertWatched.seats || null,
-      showtime: insertWatched.showtime || null,
-      timezone: insertWatched.timezone || null
+      theater: insertWatched.theater ?? null,
+      theaterAuditorium: insertWatched.theaterAuditorium ?? null,
+      ticketCount: insertWatched.ticketCount ?? null,
+      seats: insertWatched.seats ?? null,
+      showtime: insertWatched.showtime ?? null,
+      timezone: insertWatched.timezone ?? null,
+      userRating: insertWatched.userRating ?? null,
+      review: insertWatched.review ?? null
     };
     this.watchedMovies.set(id, watched);
     return watched;
@@ -259,14 +271,14 @@ export class MemStorage implements IStorage {
   async getUserWatched(userId: number, limit: number = 10): Promise<Watched[]> {
     return Array.from(this.watchedMovies.values())
       .filter(w => w.userId === userId)
-      .sort((a, b) => b.watchedAt.getTime() - a.watchedAt.getTime())
+      .sort((a, b) => (b.watchedAt?.getTime() || 0) - (a.watchedAt?.getTime() || 0))
       .slice(0, limit);
   }
   
   async getMovieWatches(movieId: number): Promise<Watched[]> {
     return Array.from(this.watchedMovies.values())
       .filter(w => w.movieId === movieId)
-      .sort((a, b) => b.watchedAt.getTime() - a.watchedAt.getTime());
+      .sort((a, b) => (b.watchedAt?.getTime() || 0) - (a.watchedAt?.getTime() || 0));
   }
   
   async getUserMovieStats(userId: number): Promise<{ 

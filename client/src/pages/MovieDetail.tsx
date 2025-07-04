@@ -11,7 +11,7 @@ import {
 
 export default function MovieDetail() {
   const { id } = useParams();
-  const movieId = parseInt(id);
+  const movieId = parseInt(id || "0");
   
   // Find the movie in our mock data
   const movie = popularMovies.find(m => m.id === movieId) || popularMovies[0];
