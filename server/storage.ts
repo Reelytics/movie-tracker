@@ -128,10 +128,14 @@ export class MemStorage implements IStorage {
     const id = this.currentUserID++;
     const now = new Date();
     const user: User = { 
-      ...insertUser, 
+      ...insertUser,
       id, 
-      popcornCount: insertUser.popcornCount ?? 0, 
-      createdAt: now 
+      popcornCount: 0, 
+      createdAt: now,
+      displayName: insertUser.displayName ?? null,
+      bio: insertUser.bio ?? null,
+      location: insertUser.location ?? null,
+      avatarUrl: insertUser.avatarUrl ?? null
     };
     this.users.set(id, user);
     return user;
@@ -293,7 +297,8 @@ export class MemStorage implements IStorage {
     const now = new Date();
     const thisMonth = userWatched.filter(w => {
       const watchedDate = w.watchedAt;
-      return watchedDate.getMonth() === now.getMonth() && 
+      return watchedDate && 
+             watchedDate.getMonth() === now.getMonth() && 
              watchedDate.getFullYear() === now.getFullYear();
     });
     
@@ -347,7 +352,11 @@ export class MemStorage implements IStorage {
   
   async createTheater(insertTheater: InsertTheater): Promise<Theater> {
     const id = this.currentTheaterID++;
-    const theater: Theater = { ...insertTheater, id };
+    const theater: Theater = { 
+      ...insertTheater, 
+      id,
+      location: insertTheater.location ?? null
+    };
     this.theaters.set(id, theater);
     return theater;
   }
@@ -372,7 +381,7 @@ export class MemStorage implements IStorage {
       }
       
       theaterStats[watch.theater].visits += 1;
-      if (watch.userRating !== undefined) {
+      if (watch.userRating !== null && watch.userRating !== undefined) {
         theaterStats[watch.theater].ratings.push(watch.userRating);
       }
     }
