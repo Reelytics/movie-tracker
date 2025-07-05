@@ -14,8 +14,8 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Remove dev dependencies for smaller image
-RUN npm prune --production
+# Don't prune dev dependencies - Vite is needed at runtime
+# RUN npm prune --production
 
 # Expose port (Railway will set PORT env var)
 EXPOSE $PORT
