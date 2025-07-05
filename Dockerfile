@@ -17,8 +17,8 @@ RUN npm run build
 # Remove dev dependencies for smaller image
 RUN npm prune --production
 
-# Expose port
-EXPOSE 5000
+# Expose port (Railway will set PORT env var)
+EXPOSE $PORT
 
 # Start the application
 CMD ["npm", "start"]
