@@ -11,12 +11,18 @@ let createViteServer: any = null;
 let createLogger: any = null;
 let viteConfig: any = null;
 
-if (process.env.NODE_ENV !== "production") {
-  const vite = await import("vite");
-  createViteServer = vite.createServer;
-  createLogger = vite.createLogger;
-  viteConfig = (await import("../vite.config.js")).default;
+// Use dynamic imports instead of top-level await
+async function loadViteModules() {
+  if (process.env.NODE_ENV !== "production") {
+    const vite = await import("vite");
+    createViteServer = vite.createServer;
+    createLogger = vite.createLogger;
+    viteConfig = (await import("../vite.config.js")).default;
+  }
 }
+
+// Initialize Vite modules
+loadViteModules();
 
 import { nanoid } from "nanoid";
 
@@ -47,7 +53,7 @@ export async function setupVite(app: Express, server: Server) {
     configFile: false,
     customLogger: {
       ...viteLogger,
-      error: (msg, options) => {
+      error: (msg: string, options?: any) => {
         viteLogger.error(msg, options);
         process.exit(1);
       },
