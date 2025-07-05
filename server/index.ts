@@ -2,7 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
-console.log('=== STARTING REELYTICS SERVER ===');
+console.log('=== STARTING REELYTICS SERVER v2 ===');
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('PORT:', process.env.PORT);
 console.log('DATABASE_URL configured:', !!process.env.DATABASE_URL);
