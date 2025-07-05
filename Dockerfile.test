@@ -1,0 +1,12 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy test server
+COPY test-server.js .
+
+# Expose port
+EXPOSE $PORT
+
+# Start test server
+CMD ["node", "test-server.js"]
