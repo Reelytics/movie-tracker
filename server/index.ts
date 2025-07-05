@@ -111,16 +111,16 @@ app.use((req, res, next) => {
     console.log('=== READY FOR REQUESTS ===');
   });
   
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('=== SERVER STARTUP FAILED ===');
     console.error('Error during server setup:', error);
-    console.error('Stack trace:', error.stack);
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
     throw error;
   }
-})().catch((error) => {
+})().catch((error: unknown) => {
   console.error('=== UNHANDLED SERVER ERROR ===');
   console.error('Failed to start server:', error);
-  console.error('Stack trace:', error.stack);
+  console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
   console.error('Environment variables:', {
     NODE_ENV: process.env.NODE_ENV,
     PORT: process.env.PORT,
