@@ -58,48 +58,49 @@ export default function LandingPage() {
     <div className="min-h-screen bg-gray-900">
       <Header />
       
-      {/* Hero Section */}
-      <section className="relative py-16">
-        <div className="max-w-6xl mx-auto px-8">
-          {/* Constrained Hero Image */}
-          <div className="relative rounded-lg overflow-hidden mb-8" style={{ aspectRatio: '16/9' }}>
-            <img
-              src={featuredFilm.backdrop}
-              alt={featuredFilm.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-            
-            {/* Film Title Overlay */}
-            <div className="absolute bottom-4 left-4 text-white">
-              <p className="text-xs opacity-75 mb-1">NOW FEATURING</p>
-              <h4 className="text-lg font-bold">{featuredFilm.title}</h4>
-              <p className="text-xs opacity-90">{featuredFilm.year}</p>
+      {/* Hero Section - Full Width like Letterboxd */}
+      <section className="relative">
+        {/* Full Width Hero Image */}
+        <div className="relative h-[80vh] overflow-hidden">
+          <img
+            src={featuredFilm.backdrop}
+            alt={featuredFilm.title}
+            className="w-full h-full object-cover"
+          />
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-black/40" />
+          
+          {/* Content Overlay - Centered like Letterboxd */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-white max-w-4xl px-8">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight">
+                Track films you've watched.
+              </h1>
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight">
+                Save those you want to see.
+              </h2>
+              <h3 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
+                Tell your friends what's good.
+              </h3>
+              
+              <Button 
+                size="lg" 
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg font-semibold rounded-md transition-colors duration-200 mb-6"
+              >
+                Get started — it's free!
+              </Button>
+              
+              <p className="text-base opacity-90">
+                The social network for film lovers. Also available on 📱 and 💻
+              </p>
             </div>
           </div>
 
-          {/* Content Below Image */}
-          <div className="text-center text-white max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 leading-tight">
-              Track films you've watched.
-            </h1>
-            <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 leading-tight">
-              Save those you want to see.
-            </h2>
-            <h3 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              Tell your friends what's good.
-            </h3>
-            
-            <Button 
-              size="lg" 
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-base font-semibold rounded-md transition-colors duration-200 mb-4"
-            >
-              Get started — it's free!
-            </Button>
-            
-            <p className="text-sm opacity-90">
-              The social network for film lovers. Also available on 📱 and 💻
-            </p>
+          {/* Film Title Overlay - Bottom Left */}
+          <div className="absolute bottom-6 left-6 text-white">
+            <p className="text-xs opacity-75 mb-1">NOW FEATURING</p>
+            <h4 className="text-xl font-bold">{featuredFilm.title}</h4>
+            <p className="text-sm opacity-90">{featuredFilm.year}</p>
           </div>
         </div>
       </section>
