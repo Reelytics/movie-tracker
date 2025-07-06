@@ -100,7 +100,7 @@ export default function LandingPage() {
 
         {/* Content Overlay */}
         <div className="relative z-10 flex items-center justify-center h-full">
-          <div className="text-center text-white max-w-3xl px-4">
+          <div className="text-center text-white max-w-4xl px-8">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 leading-tight">
               Track films you've watched.
             </h1>
@@ -125,23 +125,31 @@ export default function LandingPage() {
         </div>
 
         {/* Film Title Overlay */}
-        <div className="absolute bottom-6 left-6 text-white">
-          <p className="text-xs opacity-75 mb-1">NOW FEATURING</p>
-          <h4 className="text-lg font-bold">{currentFilm.title}</h4>
-          <p className="text-xs opacity-90">{currentFilm.year}</p>
+        <div className="absolute bottom-6 left-0 right-0">
+          <div className="max-w-6xl mx-auto px-8">
+            <div className="text-white">
+              <p className="text-xs opacity-75 mb-1">NOW FEATURING</p>
+              <h4 className="text-lg font-bold">{currentFilm.title}</h4>
+              <p className="text-xs opacity-90">{currentFilm.year}</p>
+            </div>
+          </div>
         </div>
 
         {/* Dots Indicator */}
-        <div className="absolute bottom-6 right-6 flex space-x-2">
-          {featuredFilms.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentFilmIndex(index)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentFilmIndex ? 'bg-white' : 'bg-white/40'
-              }`}
-            />
-          ))}
+        <div className="absolute bottom-6 right-0">
+          <div className="max-w-6xl mx-auto px-8 flex justify-end">
+            <div className="flex space-x-2">
+              {featuredFilms.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentFilmIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentFilmIndex ? 'bg-white' : 'bg-white/40'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     </div>

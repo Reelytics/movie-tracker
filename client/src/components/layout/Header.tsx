@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 export default function Header() {
   return (
     <header className="absolute top-0 left-0 right-0 z-50 w-full">
-      <div className="container mx-auto flex h-12 items-center justify-between px-4">
+      <div className="max-w-6xl mx-auto flex h-12 items-center justify-between px-8">
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/">
