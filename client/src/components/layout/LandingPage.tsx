@@ -10,37 +10,20 @@ interface FeaturedFilm {
   overview?: string;
 }
 
-// Fallback films in case API fails
-const FALLBACK_FILMS: FeaturedFilm[] = [
-  {
-    tmdbId: 1,
-    title: "Oppenheimer",
-    backdrop: "https://image.tmdb.org/t/p/w1280/fm6KqXpk3M2HVveHwCrBSSBaO0V.jpg",
-    year: "2023",
-    overview: "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II."
-  },
-  {
-    tmdbId: 2, 
-    title: "Barbie",
-    backdrop: "https://image.tmdb.org/t/p/w1280/ctmA4kMVFiixLyRA0GKPiAbAvsX.jpg",
-    year: "2023",
-    overview: "Barbie and Ken are having the time of their lives in the colorful and seemingly perfect world of Barbie Land."
-  },
-  {
-    tmdbId: 3,
-    title: "Spider-Man: Across the Spider-Verse", 
-    backdrop: "https://image.tmdb.org/t/p/w1280/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
-    year: "2023",
-    overview: "After reuniting with Gwen Stacy, Brooklyn's full-time, friendly neighborhood Spider-Man is catapulted across the Multiverse."
-  }
-];
+// Single featured film - no rotation
+const FEATURED_FILM: FeaturedFilm = {
+  tmdbId: 1,
+  title: "Oppenheimer",
+  backdrop: "https://image.tmdb.org/t/p/w1280/fm6KqXpk3M2HVveHwCrBSSBaO0V.jpg",
+  year: "2023",
+  overview: "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II."
+};
 
 export default function LandingPage() {
-  const [featuredFilms, setFeaturedFilms] = useState<FeaturedFilm[]>(FALLBACK_FILMS);
-  const [currentFilmIndex, setCurrentFilmIndex] = useState(0);
+  const [featuredFilm, setFeaturedFilm] = useState<FeaturedFilm>(FEATURED_FILM);
   const [loading, setLoading] = useState(true);
 
-  // Fetch current month movies from TMDB
+  // Fetch current month movies from TMDB (but just use the first one)
   useEffect(() => {
     const fetchCurrentMonthMovies = async () => {
       try {
@@ -48,20 +31,21 @@ export default function LandingPage() {
         const data = await response.json();
         
         if (data.results && data.results.length > 0) {
-          // Convert API response to our format and take the first 5 movies
-          const formattedFilms: FeaturedFilm[] = data.results.slice(0, 5).map((movie: any) => ({
-            tmdbId: movie.tmdbId,
-            title: movie.title,
-            backdrop: movie.backdropUrl || FALLBACK_FILMS[0].backdrop,
-            year: movie.year?.toString() || "2024",
-            overview: movie.overview
-          }));
+          // Use just the first movie - no rotation
+          const firstMovie = data.results[0];
+          const formattedFilm: FeaturedFilm = {
+            tmdbId: firstMovie.tmdbId,
+            title: firstMovie.title,
+            backdrop: firstMovie.backdropUrl || FEATURED_FILM.backdrop,
+            year: firstMovie.year?.toString() || "2024",
+            overview: firstMovie.overview
+          };
           
-          setFeaturedFilms(formattedFilms);
+          setFeaturedFilm(formattedFilm);
         }
       } catch (error) {
         console.error('Failed to fetch current month movies:', error);
-        // Keep fallback films if API fails
+        // Keep fallback film if API fails
       } finally {
         setLoading(false);
       }
@@ -70,37 +54,32 @@ export default function LandingPage() {
     fetchCurrentMonthMovies();
   }, []);
 
-  // Rotate through featured films every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentFilmIndex((prev) => (prev + 1) % featuredFilms.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [featuredFilms.length]);
-
-  const currentFilm = featuredFilms[currentFilmIndex];
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-900">
       <Header />
       
       {/* Hero Section */}
-      <section className="relative h-[70vh] overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img
-            src={currentFilm.backdrop}
-            alt={currentFilm.title}
-            className="w-full h-full object-cover transition-opacity duration-1000"
-            key={currentFilm.tmdbId}
-          />
-          <div className="absolute inset-0 bg-black/40" />
-        </div>
+      <section className="relative py-16">
+        <div className="max-w-6xl mx-auto px-8">
+          {/* Constrained Hero Image */}
+          <div className="relative rounded-lg overflow-hidden mb-8" style={{ aspectRatio: '16/9' }}>
+            <img
+              src={featuredFilm.backdrop}
+              alt={featuredFilm.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            
+            {/* Film Title Overlay */}
+            <div className="absolute bottom-4 left-4 text-white">
+              <p className="text-xs opacity-75 mb-1">NOW FEATURING</p>
+              <h4 className="text-lg font-bold">{featuredFilm.title}</h4>
+              <p className="text-xs opacity-90">{featuredFilm.year}</p>
+            </div>
+          </div>
 
-        {/* Content Overlay */}
-        <div className="relative z-10 flex items-center justify-center h-full">
-          <div className="text-center text-white max-w-4xl px-8">
+          {/* Content Below Image */}
+          <div className="text-center text-white max-w-4xl mx-auto">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 leading-tight">
               Track films you've watched.
             </h1>
@@ -121,34 +100,6 @@ export default function LandingPage() {
             <p className="text-sm opacity-90">
               The social network for film lovers. Also available on 📱 and 💻
             </p>
-          </div>
-        </div>
-
-        {/* Film Title Overlay */}
-        <div className="absolute bottom-6 left-0 right-0">
-          <div className="max-w-6xl mx-auto px-8">
-            <div className="text-white">
-              <p className="text-xs opacity-75 mb-1">NOW FEATURING</p>
-              <h4 className="text-lg font-bold">{currentFilm.title}</h4>
-              <p className="text-xs opacity-90">{currentFilm.year}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Dots Indicator */}
-        <div className="absolute bottom-6 right-0">
-          <div className="max-w-6xl mx-auto px-8 flex justify-end">
-            <div className="flex space-x-2">
-              {featuredFilms.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentFilmIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    index === currentFilmIndex ? 'bg-white' : 'bg-white/40'
-                  }`}
-                />
-              ))}
-            </div>
           </div>
         </div>
       </section>
