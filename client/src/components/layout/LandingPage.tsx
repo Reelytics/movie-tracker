@@ -21,9 +21,10 @@ const FEATURED_FILM: FeaturedFilm = {
 
 export default function LandingPage() {
   const [featuredFilm, setFeaturedFilm] = useState<FeaturedFilm>(FEATURED_FILM);
+  const [recentMovies, setRecentMovies] = useState<FeaturedFilm[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch current month movies from TMDB (but just use the first one)
+  // Fetch current month movies from TMDB (but just use the first one for hero)
   useEffect(() => {
     const fetchCurrentMonthMovies = async () => {
       try {
@@ -31,7 +32,7 @@ export default function LandingPage() {
         const data = await response.json();
         
         if (data.results && data.results.length > 0) {
-          // Use just the first movie - no rotation
+          // Use first movie for hero
           const firstMovie = data.results[0];
           const formattedFilm: FeaturedFilm = {
             tmdbId: firstMovie.tmdbId,
@@ -42,6 +43,17 @@ export default function LandingPage() {
           };
           
           setFeaturedFilm(formattedFilm);
+
+          // Use next 6 movies for recent releases section
+          const recentMoviesData = data.results.slice(1, 7).map((movie: any) => ({
+            tmdbId: movie.tmdbId,
+            title: movie.title,
+            backdrop: movie.posterUrl || movie.backdropUrl || FEATURED_FILM.backdrop,
+            year: movie.year?.toString() || "2024",
+            overview: movie.overview
+          }));
+          
+          setRecentMovies(recentMoviesData);
         }
       } catch (error) {
         console.error('Failed to fetch current month movies:', error);
@@ -101,6 +113,23 @@ export default function LandingPage() {
             <p className="text-sm opacity-90">
               The social network for film lovers. Also available on 📱 and 💻
             </p>
+          </div>
+
+          {/* Recent Movies Section */}
+          <div className="mt-12 text-center">
+            <div className="flex flex-wrap justify-center gap-4 max-w-5xl mx-auto">
+              {recentMovies.map((movie) => (
+                <div key={movie.tmdbId} className="w-20 md:w-24 lg:w-28">
+                  <div className="relative rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-200">
+                    <img
+                      src={movie.backdrop}
+                      alt={movie.title}
+                      className="w-full aspect-[2/3] object-cover"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
