@@ -15,11 +15,19 @@ import TicketScan from "@/pages/TicketScan";
 import Statistics from "@/pages/Statistics";
 import Profile from "@/pages/Profile";
 import MovieDetail from "@/pages/MovieDetail";
+import Films from "@/pages/Films";
+import Collections from "@/pages/Collections";
+import Members from "@/pages/Members";
+import Reviews from "@/pages/Reviews";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/films" component={Films} />
+      <Route path="/collections" component={Collections} />
+      <Route path="/members" component={Members} />
+      <Route path="/reviews" component={Reviews} />
       <Route path="/search" component={Search} />
       <Route path="/add" component={AddMovie} />
       <Route path="/movie/add/:id" component={AddMovieDetails} />

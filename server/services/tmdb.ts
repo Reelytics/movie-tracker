@@ -91,6 +91,23 @@ export async function getNowPlayingMovies(page: number = 1): Promise<TMDBSearchR
   });
 }
 
+export async function getMoviesReleasedThisMonth(page: number = 1): Promise<TMDBSearchResult> {
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  
+  const releaseDate_gte = firstDay.toISOString().split('T')[0];
+  const releaseDate_lte = lastDay.toISOString().split('T')[0];
+  
+  return fetchFromTMDB<TMDBSearchResult>("/discover/movie", {
+    page: page.toString(),
+    language: "en-US",
+    "primary_release_date.gte": releaseDate_gte,
+    "primary_release_date.lte": releaseDate_lte,
+    sort_by: "popularity.desc",
+  });
+}
+
 export function convertTMDBMovieToInsertMovie(movie: TMDBMovie): InsertMovie {
   return {
     title: movie.title,

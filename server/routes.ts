@@ -339,6 +339,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to get now playing movies', error: (error as Error).message });
     }
   });
+
+  app.get("/api/tmdb/current-month", async (req, res) => {
+    try {
+      const { page } = req.query;
+      const pageNum = page ? parseInt(page as string) : 1;
+      
+      const currentMonthMovies = await tmdbService.getMoviesReleasedThisMonth(pageNum);
+      
+      // Format the results to match our app's movie format
+      const formattedResults = currentMonthMovies.results.map(movie => ({
+        tmdbId: movie.id,
+        title: movie.title,
+        year: tmdbService.extractYearFromDate(movie.release_date),
+        posterUrl: tmdbService.getFullImagePath(movie.poster_path),
+        backdropUrl: tmdbService.getFullImagePath(movie.backdrop_path, 'w1280'),
+        overview: movie.overview
+      }));
+      
+      res.json({
+        results: formattedResults,
+        page: currentMonthMovies.page,
+        totalPages: currentMonthMovies.total_pages,
+        totalResults: currentMonthMovies.total_results
+      });
+    } catch (error) {
+      console.error('TMDB current month movies error:', error);
+      res.status(500).json({ message: 'Failed to get current month movies', error: (error as Error).message });
+    }
+  });
   
   app.post("/api/tmdb/import", async (req, res) => {
     try {
