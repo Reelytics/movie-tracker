@@ -86,7 +86,7 @@ export default function LandingPage() {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative h-[85vh] overflow-hidden">
+      <section className="relative h-[70vh] overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0">
           <img
@@ -100,44 +100,44 @@ export default function LandingPage() {
 
         {/* Content Overlay */}
         <div className="relative z-10 flex items-center justify-center h-full">
-          <div className="text-center text-white max-w-4xl px-4">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+          <div className="text-center text-white max-w-3xl px-4">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 leading-tight">
               Track films you've watched.
             </h1>
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+            <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 leading-tight">
               Save those you want to see.
             </h2>
-            <h3 className="text-4xl md:text-6xl font-bold mb-8 leading-tight">
+            <h3 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Tell your friends what's good.
             </h3>
             
             <Button 
               size="lg" 
-              className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-lg font-semibold rounded-md transition-colors duration-200"
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-base font-semibold rounded-md transition-colors duration-200 mb-4"
             >
               Get started — it's free!
             </Button>
             
-            <p className="mt-6 text-lg opacity-90">
+            <p className="text-sm opacity-90">
               The social network for film lovers. Also available on 📱 and 💻
             </p>
           </div>
         </div>
 
         {/* Film Title Overlay */}
-        <div className="absolute bottom-8 left-8 text-white">
-          <p className="text-sm opacity-75 mb-1">NOW FEATURING</p>
-          <h4 className="text-2xl font-bold">{currentFilm.title}</h4>
-          <p className="text-sm opacity-90">{currentFilm.year}</p>
+        <div className="absolute bottom-6 left-6 text-white">
+          <p className="text-xs opacity-75 mb-1">NOW FEATURING</p>
+          <h4 className="text-lg font-bold">{currentFilm.title}</h4>
+          <p className="text-xs opacity-90">{currentFilm.year}</p>
         </div>
 
         {/* Dots Indicator */}
-        <div className="absolute bottom-8 right-8 flex space-x-2">
+        <div className="absolute bottom-6 right-6 flex space-x-2">
           {featuredFilms.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentFilmIndex(index)}
-              className={`w-3 h-3 rounded-full transition-colors ${
+              className={`w-2 h-2 rounded-full transition-colors ${
                 index === currentFilmIndex ? 'bg-white' : 'bg-white/40'
               }`}
             />
