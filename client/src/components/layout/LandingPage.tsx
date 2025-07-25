@@ -76,68 +76,95 @@ export default function LandingPage() {
           <img
             src={featuredFilm.backdrop}
             alt={featuredFilm.title}
-            className="w-full h-full object-cover scale-105"
+            className="w-full h-full object-cover object-center"
           />
-          {/* Enhanced gradient overlays for better text contrast - similar to Letterboxd */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
-          <div className="absolute inset-0 bg-black/20" />
+          {/* Enhanced gradient overlays for better text contrast - matching Letterboxd exactly */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40" />
         </div>
 
-        {/* Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center">
-          {/* Featured Film Info - Letterboxd style positioning */}
-          <div className="absolute bottom-8 left-8 text-left">
-            <div className="mb-2">
-              <span className="text-white/80 text-sm font-medium tracking-wider uppercase">
-                Now Featuring
-              </span>
-            </div>
-            <h2 className="text-white text-4xl lg:text-5xl font-bold mb-1 drop-shadow-2xl">
-              {featuredFilm.title}
-            </h2>
-            <span className="text-white/90 text-lg font-medium">
-              {featuredFilm.year}
+        {/* NOW FEATURING Section - Positioned like Letterboxd */}
+        <div className="absolute bottom-12 left-12 z-20">
+          <div className="mb-3">
+            <span 
+              className="text-orange-400 text-sm font-bold tracking-widest uppercase"
+              style={{ 
+                textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.3)' 
+              }}
+            >
+              NOW FEATURING
             </span>
           </div>
+          <h2 
+            className="text-white text-5xl lg:text-6xl font-bold mb-2"
+            style={{ 
+              textShadow: '3px 3px 6px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.5)' 
+            }}
+          >
+            {featuredFilm.title}
+          </h2>
+          <span 
+            className="text-white/90 text-xl font-medium"
+            style={{ 
+              textShadow: '2px 2px 4px rgba(0,0,0,0.8)' 
+            }}
+          >
+            {featuredFilm.year}
+          </span>
+        </div>
 
-          {/* Main Content - Center */}
-          <div className="text-white space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight drop-shadow-2xl">
-                Track films you've watched.
-              </h1>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight drop-shadow-2xl">
-                Save those you want to see.
-              </h2>
-              <h3 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight drop-shadow-2xl">
-                Tell your friends what's good.
-              </h3>
-            </div>
+        {/* Main Content - Center, separated from Now Featuring */}
+        <div className="relative z-10 text-center text-white space-y-8 px-6">
+          <div className="space-y-6">
+            <h1 
+              className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight"
+              style={{ 
+                textShadow: '4px 4px 8px rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.6)' 
+              }}
+            >
+              Track films you've watched.
+            </h1>
+            <h2 
+              className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight"
+              style={{ 
+                textShadow: '4px 4px 8px rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.6)' 
+              }}
+            >
+              Save those you want to see.
+            </h2>
+            <h3 
+              className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight"
+              style={{ 
+                textShadow: '4px 4px 8px rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.6)' 
+              }}
+            >
+              Tell your friends what's good.
+            </h3>
+          </div>
+          
+          <div className="space-y-4 mt-12">
+            <Button 
+              size="lg" 
+              className="bg-green-600 hover:bg-green-700 text-white px-10 py-5 text-xl font-bold rounded-md transition-all duration-200 transform hover:scale-105 shadow-2xl"
+            >
+              Get started — it's free!
+            </Button>
             
-            <div className="space-y-4">
-              <Button 
-                size="lg" 
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg font-bold rounded-md transition-all duration-200 transform hover:scale-105 shadow-2xl"
-              >
-                Get started — it's free!
-              </Button>
-              
-              <p className="text-white/80 text-base">
-                The social network for film lovers. Also available on{" "}
-                <span className="inline-block">📱</span> and{" "}
-                <span className="inline-block">💻</span>
-              </p>
-            </div>
+            <p 
+              className="text-white/80 text-lg mt-6"
+              style={{ 
+                textShadow: '2px 2px 4px rgba(0,0,0,0.8)' 
+              }}
+            >
+              The social network for film lovers. Also available on{" "}
+              <span className="inline-block">📱</span> and{" "}
+              <span className="inline-block">💻</span>
+            </p>
           </div>
         </div>
 
-        {/* Subtle vignette effect */}
-        <div className="absolute inset-0 shadow-inner" 
-             style={{
-               boxShadow: 'inset 0 0 100px rgba(0,0,0,0.3)'
-             }} 
-        />
+        {/* Additional dark overlay for better contrast */}
+        <div className="absolute inset-0 bg-black/10" />
       </section>
 
       {/* Recent Movies Section - Improved spacing and design */}
