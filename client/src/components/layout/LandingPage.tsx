@@ -38,8 +38,7 @@ export default function LandingPage() {
             tmdbId: firstMovie.tmdbId,
             title: firstMovie.title,
             backdrop: firstMovie.backdropUrl || FEATURED_FILM.backdrop,
-            year: firstMovie.year?.toString() || "2024",
-            overview: firstMovie.overview
+            year: firstMovie.year?.toString() || "2024",            overview: firstMovie.overview
           };
           
           setFeaturedFilm(formattedFilm);
@@ -67,72 +66,109 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-slate-900">
       <Header />
       
-      {/* Hero Section - Constrained Width */}
-      <section className="relative py-16">
-        <div className="max-w-6xl mx-auto px-8">
-          {/* Constrained Hero Image */}
-          <div className="relative rounded-lg overflow-hidden mb-8" style={{ aspectRatio: '16/9' }}>
-            <img
-              src={featuredFilm.backdrop}
-              alt={featuredFilm.title}
-              className="w-full h-full object-cover"
-            />
-            {/* Dark overlay for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+      {/* Hero Section - Full width like Letterboxd */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Image with improved styling */}
+        <div className="absolute inset-0">
+          <img
+            src={featuredFilm.backdrop}
+            alt={featuredFilm.title}
+            className="w-full h-full object-cover scale-105"
+          />
+          {/* Enhanced gradient overlays for better text contrast - similar to Letterboxd */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-black/20" />
+        </div>
+
+        {/* Content Container */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center">
+          {/* Featured Film Info - Letterboxd style positioning */}
+          <div className="absolute bottom-8 left-8 text-left">
+            <div className="mb-2">
+              <span className="text-white/80 text-sm font-medium tracking-wider uppercase">
+                Now Featuring
+              </span>
+            </div>
+            <h2 className="text-white text-4xl lg:text-5xl font-bold mb-1 drop-shadow-2xl">
+              {featuredFilm.title}
+            </h2>
+            <span className="text-white/90 text-lg font-medium">
+              {featuredFilm.year}
+            </span>
+          </div>
+
+          {/* Main Content - Center */}
+          <div className="text-white space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight drop-shadow-2xl">
+                Track films you've watched.
+              </h1>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight drop-shadow-2xl">
+                Save those you want to see.
+              </h2>
+              <h3 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight drop-shadow-2xl">
+                Tell your friends what's good.
+              </h3>
+            </div>
             
-            {/* Film Title Overlay - Bottom Left */}
-            <div className="absolute bottom-4 left-4 text-white">
-              <p className="text-xs opacity-75 mb-1">NOW FEATURING</p>
-              <h4 className="text-lg font-bold">{featuredFilm.title}</h4>
-              <p className="text-xs opacity-90">{featuredFilm.year}</p>
+            <div className="space-y-4">
+              <Button 
+                size="lg" 
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg font-bold rounded-md transition-all duration-200 transform hover:scale-105 shadow-2xl"
+              >
+                Get started — it's free!
+              </Button>
+              
+              <p className="text-white/80 text-base">
+                The social network for film lovers. Also available on{" "}
+                <span className="inline-block">📱</span> and{" "}
+                <span className="inline-block">💻</span>
+              </p>
             </div>
           </div>
+        </div>
 
-          {/* Content Below Image */}
-          <div className="text-center text-white max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 leading-tight">
-              Track films you've watched.
-            </h1>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 leading-tight">
-              Save those you want to see.
-            </h2>
-            <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-              Tell your friends what's good.
+        {/* Subtle vignette effect */}
+        <div className="absolute inset-0 shadow-inner" 
+             style={{
+               boxShadow: 'inset 0 0 100px rgba(0,0,0,0.3)'
+             }} 
+        />
+      </section>
+
+      {/* Recent Movies Section - Improved spacing and design */}
+      {recentMovies.length > 0 && (
+        <section className="py-16 bg-slate-900">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <h3 className="text-2xl font-bold text-white mb-8 text-center">
+              Recent Releases
             </h3>
-            
-            <Button 
-              size="lg" 
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-base font-semibold rounded-md transition-colors duration-200 mb-4"
-            >
-              Get started — it's free!
-            </Button>
-            
-            <p className="text-sm opacity-90">
-              The social network for film lovers. Also available on 📱 and 💻
-            </p>
-          </div>
-
-          {/* Recent Movies Section */}
-          <div className="mt-12 text-center">
-            <div className="flex flex-wrap justify-center gap-4 max-w-5xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-6">
               {recentMovies.map((movie) => (
-                <div key={movie.tmdbId} className="w-20 md:w-24 lg:w-28">
-                  <div className="relative rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-200">
-                    <img
-                      src={movie.backdrop}
-                      alt={movie.title}
-                      className="w-full aspect-[2/3] object-cover"
-                    />
+                <div key={movie.tmdbId} className="group">
+                  <div className="w-24 md:w-28 lg:w-32 transition-transform duration-200 group-hover:scale-105">
+                    <div className="relative rounded-lg overflow-hidden shadow-lg group-hover:shadow-2xl transition-shadow duration-200">
+                      <img
+                        src={movie.backdrop}
+                        alt={movie.title}
+                        className="w-full aspect-[2/3] object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200" />
+                    </div>
+                    <p className="text-white/70 text-xs mt-2 text-center group-hover:text-white transition-colors duration-200">
+                      {movie.title}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }
